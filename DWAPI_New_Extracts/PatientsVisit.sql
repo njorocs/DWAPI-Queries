@@ -41,7 +41,7 @@ select ''                                                                     AS
        t.weight                                                               as Weight,
        concat(t.systolic_pressure, '/', t.diastolic_pressure)                 as BP,
        t.temperature                                                          as Temp,
-       t.z_score                                                              as ZScoreAbsolute,
+       t.z_score_absolute                                                              as ZScoreAbsolute,
        case t.z_score
            when 1115 then 'Normal (Median)'
            when 123814 then 'Mild (-1 SD)'

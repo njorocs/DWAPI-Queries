@@ -11,15 +11,18 @@ select ''                                                                       
        timestampdiff(year, d.DOB, reg.latest_vis_date)                                 as AgeLastVisit,
        i.siteCode                                                                      as SiteCode,
        i.FacilityName                                                                  as FacilityName,
-       CAST(coalesce(date_first_enrolled_in_care, min(hiv.visit_date)) as Date)        as RegistrationDate,
-       case max(hiv.entry_point)
-           when 160542 then 'OPD'
-           when 160563 then 'Other'
-           when 160539 then 'VCT'
-           when 160538 then 'PMTCT'
-           when 160541 then 'TB'
-           when 160536 then 'IPD - Adult'
-           else ""
+       CAST(coalesce(mid(min(concat(hiv.visit_date,date_first_enrolled_in_care)),11), min(hiv.visit_date)) as Date)        as RegistrationDate,
+       case mid(min(concat(hiv.visit_date, hiv.entry_point)), 11)
+                when 159938 then "HBTC"
+                when 160539 then "VCT Site"
+                when 159937 then "MCH"
+                when 160536 then "IPD-Adult"
+                when 160537 then "IPD-Child"
+                when 160541 then "TB Clinic"
+                when 160542 then "OPD"
+                when 162050 then "CCC"
+                when 160551 then "Self Test"
+                when 5622 then "Other"
            end                                                                         as PatientSource,
        if(reg.PreviousARTUse = 'Yes', mid(min(concat(hiv.visit_date, hiv.date_started_art_at_transferring_facility)),
                                           11), NULL)                                   as PreviousARTStartDate,
@@ -48,7 +51,7 @@ select ''                                                                       
        GREATEST(ifnull(hiv.date_last_modified, '0000-00-00'),
                 ifnull(disc.date_last_modified, '0000-00-00'),
                 ifnull(reg.date_last_modified, '0000-00-00'))                          as Date_Last_Modified,
-       hiv.voided                                                                      as voided
+       mid(max(concat(hiv.visit_date,hiv.voided)),11)                                  as voided
 from dwapi_etl.etl_hiv_enrollment hiv
          join dwapi_etl.etl_patient_demographics d on d.patient_id = hiv.patient_id
          left outer join (select d.patient_id,

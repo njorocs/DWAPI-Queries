@@ -26,6 +26,10 @@ select v.patient_id                                                             
        concat_ws('|', case v.spatum_smear_ordered when 307 then 'Sputum smear' end,
                  case v.chest_xray_ordered when 12 then 'Chest Xray' end,
                  case v.genexpert_ordered when 162202 then 'GeneXpert' end)                       as ICFActionTaken,
+       f.hepatotoxity as Hepatoxicity,
+       f.peripheral_neuropathy as PeripheralNeuropathy,
+       f.rash as Rash,
+       f.adherence as Adherence,
        concat_ws('|', case v.spatum_smear_result
                           when 703 then 'Positive'
                           when 664 then 'Negative' end, case v.chest_xray_result
@@ -96,6 +100,7 @@ from dwapi_etl.etl_patient_hiv_followup v
                                                                          when 1066 then 'No' end)) as IPTClientWorkUp
                     from dwapi_etl.etl_ipt_screening s) s
                    on v.patient_id = s.patient_id and v.visit_date = s.visit_date
+    left join dwapi_etl.etl_ipt_follow_up f on v.patient_id = f.patient_id and v.visit_date = f.visit_date
          left join (select i.patient_id                                         as isStarted,
                            i.visit_date                                         as TPT_Initiation_date,
                            (case i.ipt_indication

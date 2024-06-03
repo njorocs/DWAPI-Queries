@@ -36,6 +36,7 @@ select ''                                                                     AS
            when 1065 then 'Yes'
            when 1066 then 'No'
            end                                                                as Pregnant,
+    case fup.wants_pregnancy when 1065 then 'Yes' when 1066 then 'No' end as WantsTogetPregnant,
        CAST(fup.last_menstrual_period AS DATE)                                as LMP,
        CAST(fup.expected_delivery_date AS DATE)                               as EDD,
        t.height                                                               as Height,
@@ -222,6 +223,7 @@ select ''                                                                     AS
        case
            when fup.refill_date < '1990-01-01' then null
            else CAST(fup.refill_date AS DATE) end                             AS refillDate,
+       case fup.appointment_consent when 1065 then 'Yes' when 1066 then 'No' end as AppointmentReminderWillingness,
        'KenyaEMR'                                                             as Emr,
        'Kenya HMIS II'                                                        as Project,
        CAST(fup.substitution_first_line_regimen_date AS DATE)                 AS SubstitutionFirstlineRegimenDate,

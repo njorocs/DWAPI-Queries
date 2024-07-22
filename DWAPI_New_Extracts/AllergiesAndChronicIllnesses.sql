@@ -8,6 +8,7 @@ select ci.patient_id                                             as PatientPK,
        s.FacilityName                                            as FacilityName,
        ci.visit_date                                             as VisitDate,
        ci.visit_id                                               as VisitID,
+       if(ci.chronic_illness in (149019,148432,153754,159351,119270,120637,145438,1295,120576,119692,120291,119481,118631,117855,117789,139071,115728,117399,117321,151342,133687,115115,114662,117703,118976,141623),'Yes', 'No') as PatientHasChronicIllness,
        group_concat(case ci.chronic_illness
                         when 149019 then 'Alzheimers Disease and other Dementias'
                         when 148432 then 'Arthritis'
@@ -135,7 +136,7 @@ from dwapi_etl.etl_allergy_chronic_illness ci
                     group by d.patient_id) pd on pd.PrEP_disc_patient = ci.patient_id
          inner join dwapi_etl.etl_patient_demographics de on ci.patient_id = de.patient_id
          join kenyaemr_etl.etl_default_facility_info s
-where (d.hiv_disc_patient is null
+where ((d.hiv_disc_patient is null
     or d.hiv_outcome_date < e.latest_enrolment_date)
-   or (pd.PrEP_disc_patient is null or pd.PrEP_Outcome_date < pe.prep_latest_enrolment_date)
+   or (pd.PrEP_disc_patient is null or pd.PrEP_Outcome_date < pe.prep_latest_enrolment_date)) and ci.complaint is null
 group by ci.patient_id, ci.visit_date;

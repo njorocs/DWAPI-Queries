@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-232.8660.185">
+  <component name="dataSourceStorageLocal" created-in="IU-242.20224.419">
     <data-source name="kenyaemr_etl@localhost" uuid="840c7380-087e-4516-9842-d0c737c7d1fd">
       <database-info product="MySQL" version="5.6.16-1~exp1" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.47 ( Revision: fe1903b1ecb4a96a917f7ed3190d80c049b1de29 )" dbms="MYSQL" exact-version="5.6.16" exact-driver-version="5.1">
         <extra-name-characters>#@</extra-name-characters>
@@ -19,7 +19,6 @@
       <database-info product="MySQL" version="5.6.16-1~exp1" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.47 ( Revision: fe1903b1ecb4a96a917f7ed3190d80c049b1de29 )" dbms="MYSQL" exact-version="5.6.16" exact-driver-version="5.1">
         <extra-name-characters>#@</extra-name-characters>
         <identifier-quote-string>`</identifier-quote-string>
-        <jdbc-catalog-is-schema>true</jdbc-catalog-is-schema>
       </database-info>
       <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>

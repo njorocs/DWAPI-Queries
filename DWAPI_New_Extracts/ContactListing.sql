@@ -14,6 +14,7 @@ select v.patient_related_to                              as PatientPK,
        (case v.relationship_type
             when 2 then 'Sibling'
             when 3 then 'Child'
+            when 5 then 'Dependant'
             when 6 then 'Spouse'
             when 7 then 'Partner'
             when 8 then 'Co-wife'
@@ -47,5 +48,6 @@ from dwapi_etl.etl_patient_contact v
                     where program_name = 'HIV'
                     group by d.patient_id) d on d.disc_patient = v.patient_id
          join kenyaemr_etl.etl_default_facility_info s
-where d.disc_patient is null
-   or d.Outcome_date < e.latest_enrolment_date;
+where (d.disc_patient is null
+    or d.Outcome_date < e.latest_enrolment_date)
+  and v.relationship_type in (2, 3, 5, 6, 7, 8, 9, 12);

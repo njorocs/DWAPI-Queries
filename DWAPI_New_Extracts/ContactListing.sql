@@ -1,47 +1,42 @@
-select v.patient_related_to                                    as PatientPK,
-       v.uuid                                                  as uuid,
-       v.patient_id                                            as ContactPatientPK,
-       s.siteCode                                              as SiteCode,
-       de.unique_patient_no                                    as PatientID,
-       'KenyaEMR'                                              as Emr,
-       'Kenya HMIS II'                                         as Project,
-       0                                                       AS FacilityId,
-       s.FacilityName                                          as FacilityName,
-       v.patient_id                                            as PartnerPersonID,
-       timestampdiff(YEAR, date(v.birth_date), current_date()) as ContactAge,
-       v.sex                                                   as ContactSex,
-       (case v.marital_status
-            when 1057 then 'Single'
-            when 5555 then 'Married Monogamous'
-            when 159715 then 'Married Polygamous'
-            when 1058 then 'Divorced'
-            when 1059 then 'Widowed' end)                      as ContactMaritalStatus,
+select v.patient_related_to                              as PatientPK,
+       v.uuid                                            as uuid,
+       v.patient_id                                      as ContactPatientPK,
+       s.siteCode                                        as SiteCode,
+       de.unique_patient_no                              as PatientID,
+       'KenyaEMR'                                        as Emr,
+       'Kenya HMIS II'                                   as Project,
+       0                                                 AS FacilityId,
+       s.FacilityName                                    as FacilityName,
+       v.patient_id                                      as PartnerPersonID,
+       timestampdiff(YEAR, date(de.DOB), current_date()) as ContactAge,
+       de.gender                                         as ContactSex,
+       de.marital_status                                 as ContactMaritalStatus,
        (case v.relationship_type
-            when 970 then 'Mother'
-            when 971 then 'Father'
-            when 972 then 'Sibling'
-            when 1528 then 'Child'
-            when 5617 then 'Spouse'
-            when 163565 then 'Partner'
-            when 162221 then 'Co-wife'
-            when 157351 then 'Injectable drug user' end)       as RelationshipWithPatient,
-       if(v.ipv_outcome is not null, 'Yes', 'No')              as ScreenedForIpv,
-       ''                                                      as IpvScreening,
-       v.ipv_outcome                                           as IPVScreeningOutcome,
+            when 2 then 'Sibling'
+            when 3 then 'Child'
+            when 5 then 'Dependant'
+            when 6 then 'Spouse'
+            when 7 then 'Partner'
+            when 8 then 'Co-wife'
+            when 9 then 'Injectable drug user'
+            when 12 then 'SNS' end)                      as RelationshipWithPatient,
+       if(v.ipv_outcome is not null, 'Yes', 'No')        as ScreenedForIpv,
+       ''                                                as IpvScreening,
+       v.ipv_outcome                                     as IPVScreeningOutcome,
        (case v.living_with_patient
             when 1065 then "Yes"
             when 1066 then "No"
-            else "" end)                                       as CurrentlyLivingWithIndexClient,
-       v.baseline_hiv_status                                   as KnowledgeOfHivStatus,
+            else "" end)                                 as CurrentlyLivingWithIndexClient,
+       v.baseline_hiv_status                             as KnowledgeOfHivStatus,
        (case v.pns_approach
             when 162284 then "Dual referral"
             when 160551 then "Passive referral"
             when 161642 then "Contract referral"
             when 163096 then "Provider referral"
-            else "" end)                                       as PnsApproach,
-       v.date_created                                          as Date_Created,
-       v.date_last_modified                                    as Date_Last_Modified,
-       v.voided                                                as voided
+            else "" end)                                 as PnsApproach,
+       v.date_created                                    as Date_Created,
+       v.date_last_modified                              as Date_Last_Modified,
+       v.voided                                          as voided
 from dwapi_etl.etl_patient_contact v
          inner join dwapi_etl.etl_patient_demographics de on v.patient_related_to = de.patient_id
          inner join (select e.patient_id, max(e.visit_date) as latest_enrolment_date
@@ -53,5 +48,6 @@ from dwapi_etl.etl_patient_contact v
                     where program_name = 'HIV'
                     group by d.patient_id) d on d.disc_patient = v.patient_id
          join kenyaemr_etl.etl_default_facility_info s
-where d.disc_patient is null
-   or d.Outcome_date < e.latest_enrolment_date;
+where (d.disc_patient is null
+    or d.Outcome_date < e.latest_enrolment_date)
+  and v.relationship_type in (2, 3, 5, 6, 7, 8, 9, 12);

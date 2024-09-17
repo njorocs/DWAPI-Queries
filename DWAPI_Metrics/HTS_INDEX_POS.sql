@@ -21,7 +21,7 @@ from (select hts.patient_id,
                 and date(last_day(date_sub(current_date(), interval 1 MONTH)))
             group by hts.patient_id) hts
                left JOIN
-           (select patient_id, id
+           (select patient_id
             from dwapi_etl.etl_patient_contact c
             where (c.relationship_type in (971, 972, 1528, 162221, 163565, 970, 5617))
               and c.patient_id is not NULL

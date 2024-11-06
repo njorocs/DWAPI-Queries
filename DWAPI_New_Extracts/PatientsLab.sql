@@ -36,6 +36,16 @@ select ''                                                                       
             when 159882 then 'Breastfeeding'
             when 163523 then 'Clinical failure'
             when 161236 then 'Routine'
+            when 160566 then 'Immunologic failure'
+            when 160569 then 'Virologic failure'
+            when 1040 then 'Initial PCR (6week or first contact)'
+            when 1326 then '2nd PCR (6 months)'
+            when 164860 then '3rd PCR (12months)'
+            when 162082 then 'Confirmatory PCR and Baseline VL'
+            when 164460 then 'Ab test 6 weeks after cessation of breastfeeding'
+            when 164860 then 'Ab test at 18 months (1.5 years)'
+            when 162081 then 'Repeat'
+            when 167389 then 'Recency assay'
             when 160032 then 'Confirmation of persistent low level Viremia (PLLV)' end) as Reason,
        if(lab_test = 299, (case test_result
                                when 1228 then "REACTIVE"

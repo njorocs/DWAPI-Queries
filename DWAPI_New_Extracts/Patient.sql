@@ -8,6 +8,8 @@ select CASE WHEN prg.program = 'TB' THEN prg.status ELSE null end               
        d.patient_id                                                                as PatientPK,
        d.uuid                                                                      as uuid,
        d.national_unique_patient_identifier                                        as NUPI,
+       d.sha_number                                                                as SHANumber,
+       d.shif_number                                                               as SHIFNumber,
        pkv.PKV                                                                     as Pkv,
        i.siteCode                                                                  as SiteCode,
        i.facilityName                                                              as FacilityName,
@@ -120,14 +122,14 @@ from dwapi_etl.etl_hiv_enrollment hiv
                                         , CAST(SUBSTRING(dmLastName, locate(';', dmLastName) + 1,
                                                          LENGTH(dmLastName)) AS CHAR CHARACTER SET utf8)
                                         , CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                        )
+                                    )
                                 ELSE
                                     CONCAT(
                                             CAST(LEFT(Gender, 1) AS CHAR CHARACTER SET utf8)
                                         , CAST(sxFirstName AS CHAR CHARACTER SET utf8),
                                             CAST(dmLastName AS CHAR CHARACTER SET utf8),
                                             CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                        )
+                                    )
                                 END      AS PKV
                      from (SELECT patient_id,
                                   SOUNDEX(UPPER(REPLACE(given_name, '0', 'O')))                           AS sxFirstName,

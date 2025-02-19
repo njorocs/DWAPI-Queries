@@ -4,6 +4,8 @@ select d.patient_id                                                  as PatientP
        d.unique_prep_number                                          as PrepNumber,
        d.national_unique_patient_identifier                          as NUPI,
        d.openmrs_id                                                  as HtsNumber,
+       d.sha_number                                                  as SHANumber,
+       d.shif_number                                                 as SHIFNumber,
        'KenyaEMR'                                                    as Emr,
        'HMIS'                                                        as Project,
        e.visit_date                                                  as PrEPEnrolmentDate,

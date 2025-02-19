@@ -5,6 +5,8 @@ select pkv.pkv                                                              as P
        i.siteCode                                                           as SiteCode,
        d.openmrs_id                                                         as PatientMNCH_ID,
        d.hei_no                                                             as PatientHEI_ID,
+       d.sha_number                                                         as SHANumber,
+       d.shif_number                                                        as SHIFNumber,
        'KenyaEMR'                                                           as Emr,
        'Kenya HMIS II'                                                      as Project,
        i.FacilityName                                                       as FacilityName,
@@ -61,13 +63,13 @@ from dwapi_etl.etl_patient_demographics d
                                             AS
                                             CHAR CHARACTER SET utf8),
                                         CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                    )
+                                                                      )
                                 ELSE CONCAT(
                                         CAST(LEFT(Gender, 1) AS CHAR CHARACTER SET utf8),
                                         CAST(sxFirstName AS CHAR CHARACTER SET utf8),
                                         CAST(dmLastName AS CHAR CHARACTER SET utf8),
                                         CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                    )
+                                     )
                                 END      AS PKV
                      from (SELECT patient_id,
                                   SOUNDEX(UPPER(REPLACE(given_name, '0', 'O')))                           AS sxFirstName,

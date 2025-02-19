@@ -1,6 +1,8 @@
 SELECT d.patient_id                                                      as PatientPK,
        t.uuid                                                            as uuid,
        d.national_unique_patient_identifier                              as NUPI,
+       d.sha_number                                                      as SHANumber,
+       d.shif_number                                                     as SHIFNumber,
        pkv.PKV                                                           as Pkv,
        (select FacilityName from kenyaemr_etl.etl_default_facility_info) as FacilityName,
        (select siteCode from kenyaemr_etl.etl_default_facility_info)     as SiteCode,
@@ -42,13 +44,13 @@ FROM dwapi_etl.etl_hts_test t
                                             AS
                                             CHAR CHARACTER SET utf8),
                                         CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                    )
+                                                                      )
                                 ELSE CONCAT(
                                         CAST(LEFT(Gender, 1) AS CHAR CHARACTER SET utf8),
                                         CAST(sxFirstName AS CHAR CHARACTER SET utf8),
                                         CAST(dmLastName AS CHAR CHARACTER SET utf8),
                                         CAST(LTRIM(RTRIM(DATE_FORMAT(DOB, '%Y'))) AS CHAR CHARACTER SET utf8)
-                                    )
+                                     )
                                 END      AS PKV
                      from (SELECT patient_id,
                                   SOUNDEX(UPPER(REPLACE(given_name, '0', 'O')))                           AS sxFirstName,

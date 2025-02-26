@@ -232,17 +232,18 @@ select ''                                                                     AS
        fup.substitution_second_line_regimen_reason                            AS SubstitutionSecondlineRegimenReason,
        CAST(fup.second_line_regimen_change_date AS DATE)                      AS SecondlineRegimenChangeDate,
        fup.second_line_regimen_change_reason                                  AS SecondlineRegimenChangeReason,
-       CASE fup.stability
+      /* CASE fup.stability
            WHEN 1 THEN 'Stable'
            WHEN 2
-               THEN 'Not Stable' END                                          as StabilityAssessment,
+               THEN 'Not Stable' END                                          as StabilityAssessment,*/
        (case fup.differentiated_care
-            when 164942 then "Standard Care"
+/*            when 164942 then "Standard Care"
             when 164943 then "Fast Track"
             when 164944 then "Community ART Distribution - HCW Led"
             when 164945 then "Community ART Distribution - Peer Led"
-            when 164946 then "Facility ART Distribution Group"
-            else "" end)                                                      as DifferentiatedCare,
+            when 164946 then "Facility ART Distribution Group"*/
+            when 1537 then "Facility ART distribution group"
+            when 163488 then "Community ART distribution group" end)                                                      as DifferentiatedCare,
        (case population_type
             when 164928 then "General Population"
             when 164929 then "Key Population"
@@ -253,9 +254,19 @@ select ''                                                                     AS
            WHEN 160579 THEN 'FSW'
            when 165084 then 'MSW'
            when 165085 then 'PWUD'
-           when 165100 then 'Transgender'
            WHEN 1175 THEN 'N/A' END                                           as KeyPopulationType,
-       ''                                                                     as HCWConcern,
+    (case fup.condom_provided when 1065 then 'Yes' when 1066 then 'No' when 1067 then 'Unknown' when 1175 then 'N/A' end) as ClientGivenCondoms,
+    (case fup.substance_abuse_screening when 1065 then 'Yes' when 1066 then 'No' when 1067 then 'Unknown' when 1175 then 'N/A' end) as ClientScreenedforSubstanceAbuse,
+    (case fup.pwp_disclosure when 1065 then 'Yes' when 1066 then 'No' when 1067 then 'Unknown' when 1175 then 'N/A' end) as ClientDisclosedHIVStatus,
+    (case fup.pwp_partner_tested when 1065 then 'Yes' when 1066 then 'No' when 1067 then 'Unknown' when 1175 then 'N/A' end) as ClientsPartnerReceivedTesting,
+    (case fup.cacx_screening when 703 then 'Positive' when 664 then 'Negative' when 1118 then 'Not Done' when 1175 then 'N/A' end) as ClientScreenedforCacx,
+    (case fup.screened_for_sti when 703 then 'Positive' when 664 then 'Negative' when 1118 then 'Not Done' when 1175 then 'N/A' end) as ClientScreenedforSTI,
+    (case fup.experienced_gbv when 1065 then 'Yes' when 1066 then 'No' end) as ClientGBVVictim,
+    (case fup.depression_screening when 1065 then 'Yes' when 1066 then 'No' end) as ClientScreenedforDepression,
+    (case fup.stability when 1 then 'Established' when 2 then 'Not Established' end) as EstablishementAssessment,
+       (case fup.established_differentiated_care when 164942 then 'Standard Care' when 164943 then 'Fast Track' when 166443 then 'Health care worker Led facility ART group(HFAG)'
+           when 166444 then 'Peer Led Facility ART Group(PFAG)' when 1555 then 'Health care worker Led Community ART group(HCAG)' when 164945 then 'Peer Led Community ART Group(PCAG)'
+           when 1000478 then 'Community Pharmacy(CP)' when 164944 then 'Community ART Distribution Points(CAPD)' when 166583 then 'Individual patient ART Community Distribution(IACD)' end) as EstablishedDifferentiatedCare,
        fup.date_created                                                       as Date_Created,
        fup.date_last_modified                                                 as Date_Last_Modified,
        fup.voided                                                             as voided

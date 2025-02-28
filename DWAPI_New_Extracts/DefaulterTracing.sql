@@ -17,6 +17,7 @@ select d.openmrs_id                                                             
             when 1118 then 'No contact' end)                                  as TracingOutcome,
        f.attempt_number                                                       as AttemptNumber,
        (case f.is_final_trace when 1267 then 'Yes' when 163339 then 'No' end) as IsFinalTrace,
+       if(f.is_final_trace = 1267, f.visit_date,null)                              as DateofOutcome,
        (case f.tracing_outcome
             when 165610 then 'COVID19 Positive'
             when 160432 then 'Dead'
@@ -41,8 +42,8 @@ select d.openmrs_id                                                             
             when 5622 then 'Other' end)                                       as ReasonForMissedAppointment,
        case
            when fup.next_appointment_date < '1990-01-01' then null
-           else CAST(fup.next_appointment_date AS DATE) end                     AS DatePromisedToCome,
-       f.missed_appointment_date                                               as DateOfMissedAppointment,
+           else CAST(fup.next_appointment_date AS DATE) end                   AS DatePromisedToCome,
+       f.missed_appointment_date                                              as DateOfMissedAppointment,
        (case f.cause_of_death
             when 165609 then 'Infection due to COVID-19'
             when 162574 then 'Death related to HIV infection'
@@ -59,6 +60,6 @@ select d.openmrs_id                                                             
        f.voided                                                               as voided
 from dwapi_etl.etl_patient_demographics d
          join dwapi_etl.etl_ccc_defaulter_tracing f on d.patient_id = f.patient_id
-    join dwapi_etl.etl_patient_hiv_followup fup on fup.patient_id = d.patient_id
+         join dwapi_etl.etl_patient_hiv_followup fup on fup.patient_id = d.patient_id
          join kenyaemr_etl.etl_default_facility_info i
 group by f.visit_id;

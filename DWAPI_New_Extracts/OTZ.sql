@@ -58,6 +58,7 @@ from dwapi_etl.etl_patient_demographics de
                             e.date_last_modified                              as date_last_modified,
                             a.date_last_modified                              as activity_date_last_modified
                      from dwapi_etl.etl_otz_enrollment e
+                              inner join dwapi_etl.etl_patient_hiv_followup f on e.patient_id = f.patient_id
                               left join dwapi_etl.etl_otz_activity a on e.patient_id = a.patient_id
                      group by e.patient_id) e on de.patient_id = e.patient_id
          left join (select d.patient_id,

@@ -253,7 +253,6 @@ select ''                                                                     AS
            WHEN 160579 THEN 'FSW'
            when 165084 then 'MSW'
            when 165085 then 'PWUD'
-           when 165100 then 'Transgender'
            WHEN 1175 THEN 'N/A' END                                           as KeyPopulationType,
        ''                                                                     as HCWConcern,
        fup.date_created                                                       as Date_Created,

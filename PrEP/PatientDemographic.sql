@@ -28,7 +28,6 @@ select d.patient_id                                                  as PatientP
             when 164929 then 'Key Population' end)                   as PopulationType,
        case e.kp_type
            when 162277 then 'People in prison and other closed settings'
-           when 165100 then 'Transgender'
            when 105 then 'PWID'
            when 160578 then 'MSM'
            when 165084 then 'MSW'

@@ -12,7 +12,7 @@ select d.patient_id                                                             
        (case h.high_risk_partner when 'High risk partner' then 'Yes' else 'No' end) as IsPartnerHighRisk,
        h.risk                                                                       as PartnerARTRisk,
        concat_ws(',', case sex_with_multiple_partners when 'Yes' then 'Has Sex with more than one partner' end,
-                 case ipv_gbv when 'Yes' then 'Ongoing IPVor/and GBV' end,
+                 case ipv_gbv when 'Yes' then 'Ongoing IPVor/and Violence' end,
                  case transactional_sex when 'Yes' then 'Transactional sex' end,
                  case recent_sti_infected when 'Yes' then 'Recent STI in the last 6 months' end,
                  case recurrent_pep_use when 'Yes' then 'Recurrent use of PEP' end,

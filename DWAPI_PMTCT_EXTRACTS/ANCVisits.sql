@@ -1,112 +1,118 @@
-select d.patient_id                                                                 PatientPK,
-       a.uuid                                    as                                 uuid,
-       i.siteCode                                                                   SiteCode,
-       d.openmrs_id                                                                 PatientMNCH_ID,
-       'KenyaEMR'                                                                   Emr,
-       'Kenya HMIS II'                                                              Project,
-       i.facilityName                                                               FacilityName,
-       a.visit_id                                                                   VisitId,
-       a.visit_date                                                                 VisitDate,
-       e.anc_number                                                                 ANCClinicNumber,
-       a.anc_visit_number                                                           ANCVisitNo,
-       a.maturity                                                                   GestationWeeks,
-       round(a.height, 2)                                                           Height,
-       round(a.weight, 2)                                                           Weight,
-       round(a.temperature, 1)                                                      Temp,
-       a.pulse_rate                                                                 PulseRate,
-       a.respiratory_rate                                                           RespiratoryRate,
-       a.oxygen_saturation                                                          OxygenSaturation,
-       a.muac                                                                       MUAC,
-       concat_ws('/', a.systolic_bp, a.diastolic_bp)                                BP,
-       case a.breast_exam_done when 1065 then 'Yes' when 1066 then 'No' end         BreastExam,
-       case a.anc_exercises when 1065 then 'Yes' when 1066 then 'No' end            AntenatalExercises,
-       (case a.fgm_done when 1065 then "Yes" when 1066 then "No" end)               FGM,
+select d.patient_id                                                                             PatientPK,
+       a.uuid                                    as                                             uuid,
+       i.siteCode                                                                               SiteCode,
+       d.openmrs_id                                                                             PatientMNCH_ID,
+       'KenyaEMR'                                                                               Emr,
+       'Kenya HMIS II'                                                                          Project,
+       i.facilityName                                                                           FacilityName,
+       a.visit_id                                                                               VisitId,
+       a.visit_date                                                                             VisitDate,
+       e.anc_number                                                                             ANCClinicNumber,
+       a.anc_visit_number                                                                       ANCVisitNo,
+       a.maturity                                                                               GestationWeeks,
+       round(a.height, 2)                                                                       Height,
+       round(a.weight, 2)                                                                       Weight,
+       round(a.temperature, 1)                                                                  Temp,
+       a.pulse_rate                                                                             PulseRate,
+       a.respiratory_rate                                                                       RespiratoryRate,
+       a.oxygen_saturation                                                                      OxygenSaturation,
+       a.muac                                                                                   MUAC,
+       concat_ws('/', a.systolic_bp, a.diastolic_bp)                                            BP,
+       case a.breast_exam_done when 1115 then 'Normal' when 1116 then 'Abnormal' end            BreastExam,
+       case a.anc_exercises when 1065 then 'Yes' when 1066 then 'No' end                        AntenatalExercises,
+       (case a.fgm_done when 1065 then "Yes" when 1066 then "No" end)                           FGM,
        (case a.fgm_complications
             when 122949 then "Scarring"
             when 136308 then "Keloids"
             when 141615 then "dyspaneuria"
-            when 111633 then "UTI" end)                                             FGMComplications,
-       a.hemoglobin                                                                 Haemoglobin,
+            when 111633 then "UTI" end)                                                         FGMComplications,
+       a.hemoglobin                                                                             Haemoglobin,
        (case a.diabetes_test
             when 664 then "No Diabetes"
             when 703 then "Has Diabetes"
-            when 160737 then "Not Done" end)                                        DiabetesTest,
+            when 160737 then "Not Done" end)                                                    DiabetesTest,
        case a.tb_screening
            when 1660 then 'NO signs'
            when 142177 then 'TB presumed'
            when 164128 then 'No signs and started on INH'
            when 1662 then 'TB Rx'
            when 160737
-               then 'Not done (ND)' end                                             TBScreening,
+               then 'Not done (ND)' end                                                         TBScreening,
        case a.cacx_screening
            when 664 then 'Normal'
            when 159393 then 'Presumed'
            when 703 then 'Confirmed'
            when 1118 then 'Not Done'
            when 1175
-               then 'N/A' end                                                       CACxScreen,
+               then 'N/A' end                                                                   CACxScreen,
        case a.cacx_screening_method
            when 885 then 'Pap Smear'
            when 162816 then 'VIA'
            when 164977 then 'VILI'
            when 5622
-               then 'Other' end                                                     CACxScreenMethod,
+               then 'Other' end                                                                 CACxScreenMethod,
+       if(e.blood_group is not null, 'Yes', 'No')                                               BloodGroup,
+       if(e.blood_group is not null, 'Yes', 'No')                                               Rhesus,
        case a.who_stage
            when 1204 then 1
            when 1205 then 2
            when 1206 then 3
            when 1207
-               then 4 end                                                           WHOStaging,
-       case a.vl_sample_taken when 856 then 'Yes' when 1066 then 'No' end           VLSampleTaken,
-       if(a.vl_sample_taken = 856, a.visit_date, '')                                VLDate,
-       coalesce(a.viral_load, a.ldl)                                                VLResult,
+               then 4 end                                                                       WHOStaging,
+       case a.vl_sample_taken when 856 then 'Yes' when 1066 then 'No' end                       VLSampleTaken,
+       if(a.vl_sample_taken = 856, a.visit_date, '')                                            VLDate,
+       coalesce(a.viral_load, a.ldl)                                                            VLResult,
        case a.syphilis_treated_status
            when 1065 then 'Yes'
            when 1066 then 'No'
-           else 'NA' end                                                            SyphilisTreatment,
+           else 'NA' end                                                                        SyphilisTreatment,
        case e.hiv_status
            when 703 then 'KP'
            when 1067 then 'Unknown'
            when 664
-               then 'Negative' end                                                  HIVStatusBeforeANC,
+               then 'Negative' end                                                              HIVStatusBeforeANC,
        if(a.final_test_result is not null or a.test_1_result is not null or a.test_2_result is not null, 'Yes',
-          'No')                                                                     HIVTestingDone,
-       'Initial'                                                                    HIVTestType,
-       a.test_1_kit_lot_no                                                          HIVTest_1,
-       a.test_1_result                                                              HIVTest_1Result,
-       a.test_2_kit_lot_no                                                          HIVTest_2,
-       a.final_test_result                                                          HIVTestFinalResult,
+          'No')                                                                                 HIVTestingDone,
+       if(a.final_test_result is not null or a.test_1_result is not null or a.test_2_result is not null, 'Initial',
+          null)                                                                                 HIVTestType,
+       a.test_1_kit_name                                                                        HIVTest_1,
+       a.test_1_result                                                                          HIVTest_1Result,
+       a.test_2_kit_name                                                                        HIVTest_2,
+       a.test_3_kit_name                                                                        HIVTest_3,
+       a.final_test_result                                                                      HIVTestFinalResult,
        case a.syphilis_test_status
            when 1229 then 'Yes'
            when 1228 then 'Yes'
            when 1271 then 'Yes'
            when 1402 then 'ND'
            when 1304 then 'Yes'
-           else 'No' end                                                            SyphilisTestDone,
-       ''                                                                           SyphilisTestType,
+           else 'No' end                                                                        SyphilisTestDone,
+       if(a.syphilis_test_status in (1229, 1228, 12711304), 'Dual Testing', null)               SyphilisTestType,
        case a.syphilis_test_status
            when 1229 then 'Negative'
            when 1228 then 'Positive'
-           else 'N/A' end                                                           SyphilisTestResults,
+           else 'N/A' end                                                                       SyphilisTestResults,
        case a.syphilis_treated_status
            when 1065 then 'Yes'
            when 1066 then 'No'
-           else 'NA' end                                                            SyphilisTreated,
+           else 'NA' end                                                                        SyphilisTreated,
        case a.prophylaxis_given
            when 105281 then 'Yes'
            when 74250 then 'Yes'
-           when 1107 then 'No' end                                                  MotherProphylaxisGiven,
-       a.date_given_haart                                                           DateMotherStartedHAART,
+           when 1107 then 'No' end                                                              MotherProphylaxisGiven,
+       a.date_given_haart                                                                       DateMotherStartedHAART,
+       if(a.baby_azt_dispensed = 160123 AND a.baby_nvp_dispensed = 80586, 'AN',
+          if(a.baby_azt_dispensed = 160123, 'A', if(a.baby_nvp_dispensed = 160123, 'N', NULL))) InfantProphylaxis,
        case a.baby_azt_dispensed
            when 160123 then 'Yes'
            when 1066 then 'No'
            when 1175
-               then 'NA' end                                                        AZTBabyDispense,
+               then 'NA' end                                                                    AZTBabyDispense,
        case a.baby_nvp_dispensed
            when 80586 then 'Yes'
            when 1066 then 'No'
            when 1175
-               then 'NA' end                                                        NVPBabyDispense,
+               then 'NA' end                                                                    NVPBabyDispense,
        group_concat(case ci.chronic_illness
                         when 149019 then 'Alzheimers Disease and other Dementias'
                         when 148432 then 'Arthritis'
@@ -134,7 +140,7 @@ select d.patient_id                                                             
                         when 117703 then 'Sickle Cell Anaemia'
                         when 118976 then 'Thyroid disease'
                         end SEPARATOR
-                    '|')                                                            ChronicIllness,
+                    '|')                                                                        ChronicIllness,
        concat_ws('|', nullif(case a.counselled_on_birth_plans when 159758 then 'Birth plans' end, ''),
                  nullif(case a.counselled_on_danger_signs
                             when 159857 then 'Danger signs' end, ''), nullif(case a.counselled_on_family_planning
@@ -149,81 +155,82 @@ select d.patient_id                                                             
                             when 161651 then 'Infant feeding' end, ''), nullif(case a.counselled_on_treated_nets
                                                                                    when 1381 then 'ITN'
                                                                                    end,
-                                                                               '')) CounselledOn,
+                                                                               ''))             CounselledOn,
        (case a.hepatitis_b_screening
             when 703 then "Positive"
             when 664 then "Negative"
-            when 160737 then "Not Done" end)                                        HepatitisBScreening,
-       (case a.hepatitis_b_treatment when 1065 then "Yes" when 1066 then "No" end)  TreatedHepatitisB,
+            when 160737 then "Not Done" end)                                                    HepatitisBScreening,
+       (case a.hepatitis_b_treatment when 1065 then "Yes" when 1066 then "No" end)              TreatedHepatitisB,
        case a.partner_hiv_tested
            when 1065 then 'Yes'
            when 1066 then 'No'
-           else 'NA' end                                                            PartnerHIVTestingANC,
+           else 'NA' end                                                                        PartnerHIVTestingANC,
        case a.partner_hiv_status
            when 703 then 'HIV Positive'
            when 664 then 'HIV Negative'
            when 1067
-               then 'UNKNOWN' end                                                   PartnerHIVStatusANC,
+               then 'UNKNOWN' end                                                               PartnerHIVStatusANC,
        (case a.fp_method_postpartum
             when 5275 then "IUD"
             when 159589 then "Implants"
-            when 1472 then "BTL" end)                                               PostParturmFP,
-       a.deworming_done_anc                                                         Deworming,
+            when 1472 then "BTL" end)                                                           PostParturmFP,
+       a.deworming_done_anc                                                                     Deworming,
        case a.intermittent_presumptive_treatment_given
            when 1065 then 'Yes'
            when 1066 then 'No'
-           when 1175 then 'Not Applicable' end   as                                 MalariaProphylaxis,
-       a.TTT                                                                        TetanusDose,
-       a.iron_supplement                                                            IronSupplementsGiven,
-       case a.counselled_on_treated_nets when 1381 then 'Yes' end                   ReceivedMosquitoNet,
+           when 1175 then 'Not Applicable' end   as                                             MalariaProphylaxis,
+       a.TTT                                                                                    TetanusDose,
+       a.iron_supplement                                                                        IronSupplementsGiven,
+       case a.counselled_on_treated_nets when 1381 then 'Yes' end                               ReceivedMosquitoNet,
        concat_ws('|', nullif(case a.TTT when 'Yes' then 'Tetanus Toxoid' end, ''),
-                 nullif(case a.intermittent_presumptive_treatment_given when 1065 then 'Malaria Prophylaxis' end, ''),
+                 nullif(case a.intermittent_presumptive_treatment_given when 1065 then 'Malaria Prophylaxis' end,
+                        ''),
                  nullif(case a.iron_supplement when 'Yes' then 'Folate / Iron ' end, ''),
                  nullif(case a.deworming_done_anc when 'Yes' then 'Mebendazole' end, ''),
                  nullif(case a.counselled_on_treated_nets
                             when 1381
                                 then 'Long-Lasting Insecticidal Net' end,
-                        ''))                     as                                 PreventiveServices,
+                        ''))                     as                                             PreventiveServices,
        (case a.intermittent_presumptive_treatment_given
             when 1065 then "Yes"
             when 1066 then "No"
             when 1175
-                then "Not Applicable" end)                                          PresumptiveTreatmentGiven,
+                then "Not Applicable" end)                                                      PresumptiveTreatmentGiven,
        (case a.intermittent_presumptive_treatment_dose
-            when 1 then "First Dose"
-            when 2 then "Second Dose"
-            when 3 then "Third Dose"
-            when 4 then "Fourth Dose"
-            when 5 then "Fifth Dose"
-            when 6 then "Sith Dose"
-            when 7 then "Seventh Dose"
+            when 1 then "IPT 1"
+            when 2 then "IPT 2"
+            when 3 then "IPT 3"
+            when 4 then "IPT 4"
+            when 5 then "IPT 5"
             when 0
-                then "No" end)                                                      PresumptiveTreatmentDose,
-       (case a.minimum_care_package when 1065 then "Yes" when 1066 then "No" end)   MiminumPackageofCareReceived,
-       a.minimum_package_of_care_services                                           MiminumPackageofCareServices,
+                then "N"
+            else 'NA' end)                                                                      PresumptiveTreatmentDose,
+       (case a.minimum_care_package when 1065 then "Yes" when 1066 then "No" end)               MiminumPackageofCareReceived,
+       a.minimum_package_of_care_services                                                       MiminumPackageofCareServices,
        if(a.urine_microscopy is not null or a.urinary_albumin is not null or a.glucose_measurement is not null
               or a.urine_ph is not null or a.urine_gravity is not null or a.urine_nitrite_test is not null
               or a.urine_dipstick_for_blood is not null or a.urine_leukocyte_esterace_test is not null or
           a.urinary_ketone is not null
               or a.urine_bile_pigment_test is not null or a.urine_bile_salt_test is not null or
           a.urine_colour is not null or a.urine_turbidity is not null, 'Yes',
-          'No')                                                                     UrinalysisVariables,
+          'No')                                                                                 UrinalysisVariables,
        case a.referred_from
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
-           when 1175 then 'N/A' END                                                 ReferredFrom,
+           when 1175 then 'N/A' END                                                             ReferredFrom,
        case a.referred_to
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
-           when 1175 then 'N/A' END              as                                 ReferredTo,
-       ''                                                                           ReferralReasons,
-       a.next_appointment_date                                                      NextAppointmentANC,
-       a.clinical_notes                                                             ClinicalNotes,
-       a.date_created                                                               Date_Created,
+           when 165093 then 'Referred for HIV preventive services'
+           when 1175 then 'N/A' END              as                                             ReferredTo,
+       ''                                                                                       ReferralReasons,
+       a.next_appointment_date                                                                  NextAppointmentANC,
+       a.clinical_notes                                                                         ClinicalNotes,
+       a.date_created                                                                           Date_Created,
        GREATEST(COALESCE(a.date_last_modified, e.date_last_modified, ci.date_last_modified),
                 COALESCE(a.date_last_modified, e.date_last_modified,
-                         ci.date_last_modified)) as                                 Date_Last_Modified,
-       a.voided                                  as                                 voided
+                         ci.date_last_modified)) as                                             Date_Last_Modified,
+       a.voided                                  as                                             voided
 from dwapi_etl.etl_patient_demographics d
          join dwapi_etl.etl_mch_antenatal_visit a on d.patient_id = a.patient_id
          left join dwapi_etl.etl_allergy_chronic_illness ci on a.visit_id = ci.visit_id

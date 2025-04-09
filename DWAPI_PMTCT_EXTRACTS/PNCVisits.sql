@@ -8,6 +8,7 @@ select d.patient_id                                                             
        p.visit_id                                                                         VisitId,
        p.visit_date                                                                       VisitDate,
        p.pnc_register_no                                                                  PNCRegisterNumber,
+       d.nupi                                                                             NUPI,
        p.pnc_visit_no                                                                     PNCVisitNo,
        (case p.visit_timing_mother
             when 1721 then '0-48 Hours'
@@ -83,6 +84,7 @@ select d.patient_id                                                             
            when 1107 then 'None'
            when 49 then 'Vesicovaginal Fistula'
            when 127847 then 'Rectovaginal fistula'
+           when 111521 then 'Vesicovaginal Reflux'
            when 1118 then 'Not done' end                                               as Fistula,
        ''                                                                              as MaternalComplications,
        (case tb.resulting_tb_status
@@ -98,8 +100,8 @@ select d.patient_id                                                             
            when 164977 then 'VILI'
            when 5622 then 'Other' end                                                  as CACxScreenMethod,
        case p.cacx_screening
-           when 664 then 'Norrmal'
-           when 159393 then 'Presumed'
+           when 664 then 'Normal'
+           when 159393 then 'Suspected'
            when 703 then 'Confirmed'
            when 1118 then 'Not done'
            when 1175 then 'N/A' end                                                    as CACxScreenResults,
@@ -116,12 +118,13 @@ select d.patient_id                                                             
             when 1175 then 'N/A'
             when 164142 then 'Revisit'
             else '' end)                                                                  MotherGivenHAART,
-       if(p.final_test_result is not null or p.test_1_result is not null or p.test_2_result is not null, 'Yes',
-          'No')                                                                           HIVTestingDone,
+       if(p.final_test_result is not null, 'Yes', 'No')                                   HIVTestingDone,
        p.test_1_kit_lot_no                                                                HIVTest_1,
        p.test_1_result                                                                    HIVTest_1Result,
        p.test_2_kit_lot_no                                                                HIVTest_2,
        p.test_2_result                                                                    HIVTest_2Result,
+       p.test_3_kit_lot_no                                                                HIVTest_3,
+       ''                                                                                 InitiatedonPrep,
        p.final_test_result                                                                HIVTestFinalResult,
        if(p.baby_nvp_dispensed = 80586 or p.baby_azt_dispensed = 160123, 'Yes', 'No')  as InfantProphylaxisGiven,
        if(p.prophylaxis_given in (105281, 74250), 'Yes', 'No')                         as MotherProphylaxisGiven,
@@ -190,9 +193,10 @@ select d.patient_id                                                             
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
            when 1175 then 'N/A' end                                                    as ReferredTo,
+       p.referral_reason                                                               as ReferralReason,
        p.appointment_date                                                              as NextAppointmentPNC,
        p.clinical_notes                                                                as ClinicalNotes,
-       p.date_created                                                                     Date_Created,
+       p.date_created                                                                  as Date_Created,
        p.date_last_modified                                                            as Date_Last_Modified,
        p.voided                                                                        as voided
 from dwapi_etl.etl_patient_demographics d

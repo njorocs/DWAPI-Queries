@@ -71,9 +71,9 @@ select d.patient_id                                                             
            when 1067 then 'Unknown'
            when 664
                then 'Negative' end                                                              HIVStatusBeforeANC,
-       if(a.final_test_result is not null or a.test_1_result is not null or a.test_2_result is not null, 'Yes',
+       if(a.final_test_result is not null, 'Yes',
           'No')                                                                                 HIVTestingDone,
-       if(a.final_test_result is not null or a.test_1_result is not null or a.test_2_result is not null, 'Initial',
+       if(a.final_test_result is not null, 'Initial',
           null)                                                                                 HIVTestType,
        a.test_1_kit_name                                                                        HIVTest_1,
        a.test_1_result                                                                          HIVTest_1Result,
@@ -221,11 +221,12 @@ select d.patient_id                                                             
        case a.referred_to
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
-           when 165093 then 'Referred for HIV preventive services'
+           when 165093 then 'HIV preventive services'
            when 1175 then 'N/A' END              as                                             ReferredTo,
        ''                                                                                       ReferralReasons,
        a.next_appointment_date                                                                  NextAppointmentANC,
-       a.clinical_notes                                                                         ClinicalNotes,
+       a.clinical_notes                          as                                             ClinicalNotes,
+       d.nupi                                    as                                             NUPI,
        a.date_created                                                                           Date_Created,
        GREATEST(COALESCE(a.date_last_modified, e.date_last_modified, ci.date_last_modified),
                 COALESCE(a.date_last_modified, e.date_last_modified,

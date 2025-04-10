@@ -124,7 +124,6 @@ select d.patient_id                                                             
        p.test_2_kit_lot_no                                                                HIVTest_2,
        p.test_2_result                                                                    HIVTest_2Result,
        p.test_3_kit_lot_no                                                                HIVTest_3,
-       ''                                                                                 InitiatedonPrep,
        p.final_test_result                                                                HIVTestFinalResult,
        if(p.baby_nvp_dispensed = 80586 or p.baby_azt_dispensed = 160123, 'Yes', 'No')  as InfantProphylaxisGiven,
        if(p.prophylaxis_given in (105281, 74250), 'Yes', 'No')                         as MotherProphylaxisGiven,

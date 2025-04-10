@@ -103,6 +103,7 @@ select d.patient_id                                                             
        l.test_2_kit_name                                                       as           HIVTest_2,
        l.test_2_result                                                         as           HIV_2Results,
        l.test_3_kit_name                                                       as           HIVTest_3,
+       l.test_3_result                                                         as           HIV_3Results,
        l.final_test_result                                                     as           HIVTestFinalResult,
        (case l.mother_on_haart_during_anc
             when 1065 then "Yes"
@@ -118,14 +119,17 @@ select d.patient_id                                                             
        case l.prophylaxis_given
            when 105281 then 'Yes'
            when 1107 then 'No'
-           else 'NA' end                                                         as           MotherGivenCTX,
+           else 'NA' end                                                       as           MotherGivenCTX,
        case l.partner_hiv_tested when 1065 then 'Yes' when 1066 then 'No' end  as           PartnerHIVTestingMAT,
        case l.partner_hiv_status
            when 703 then 'HIV Positive'
            when 664 then 'HIV Negative'
            when 1067
                then 'Unknown' end                                              as           PartnerHIVStatusMAT,
-       concat_ws('|', nullif(case l.counseling_on_infant_feeding_for_hiv_infected when 1065 then 'Yes' when 1066 then 'No' when 1175 then 'NA' end, ''),
+       concat_ws('|', nullif(case l.counseling_on_infant_feeding_for_hiv_infected
+                                 when 1065 then 'Yes'
+                                 when 1066 then 'No'
+                                 when 1175 then 'NA' end, ''),
                  '')                                                           as           CounselledOnInfantFeeding,
        case
            when 1537 then 'Another Health Facility'

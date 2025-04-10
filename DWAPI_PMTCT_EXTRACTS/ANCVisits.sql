@@ -40,19 +40,16 @@ select d.patient_id                                                             
                then 'Not done (ND)' end                                                         TBScreening,
        case a.cacx_screening
            when 664 then 'Normal'
-           when 159393 then 'Presumed'
+           when 159393 then 'Suspected'
            when 703 then 'Confirmed'
-           when 1118 then 'Not Done'
-           when 1175
-               then 'N/A' end                                                                   CACxScreen,
+           when 1118 then 'Not done'
+           when 1175 then 'N/A' end                                                             CACxScreen,
        case a.cacx_screening_method
            when 885 then 'Pap Smear'
            when 162816 then 'VIA'
            when 164977 then 'VILI'
            when 5622
                then 'Other' end                                                                 CACxScreenMethod,
-       if(e.blood_group is not null, 'Yes', 'No')                                               BloodGroup,
-       if(e.blood_group is not null, 'Yes', 'No')                                               Rhesus,
        case a.who_stage
            when 1204 then 1
            when 1205 then 2
@@ -73,12 +70,13 @@ select d.patient_id                                                             
                then 'Negative' end                                                              HIVStatusBeforeANC,
        if(a.final_test_result is not null, 'Yes',
           'No')                                                                                 HIVTestingDone,
-       if(a.final_test_result is not null, 'Initial',
-          null)                                                                                 HIVTestType,
+       ''                                                                                       HIVTestType,
        a.test_1_kit_name                                                                        HIVTest_1,
        a.test_1_result                                                                          HIVTest_1Result,
        a.test_2_kit_name                                                                        HIVTest_2,
+       a.test_2_result                                                                          HIVTest_2Result,
        a.test_3_kit_name                                                                        HIVTest_3,
+       a.test_3_result                                                                          HIVTest_3Result,
        a.final_test_result                                                                      HIVTestFinalResult,
        case a.syphilis_test_status
            when 1229 then 'Yes'

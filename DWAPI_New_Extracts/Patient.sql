@@ -62,6 +62,9 @@ select CASE WHEN prg.program = 'TB' THEN prg.status ELSE null end               
            WHEN 164931 THEN 'Transit'
            ELSE hiv.patient_type
            END                                                                     AS PatientType,
+       kvp.trucker_duration_on_transit                                             as HowlongonTransit,
+       coalesce(kvp.duration_working_as_trucker, kvp.duration_working_as_trucker)  as HowLongTruckerFisherfolk,
+       kvp.year_tested_discordant_couple                                           as YearTestedAsDiscordant,
        if(c.client_id is not null, 'Key population', (select CASE
                                                                  WHEN mid(max(concat(f.visit_date, f.population_type)), 11) = 164929
                                                                      THEN 'Key population'
@@ -75,11 +78,17 @@ select CASE WHEN prg.program = 'TB' THEN prg.status ELSE null end               
                                                    WHEN 105 THEN 'PWID'
                                                    WHEN 160578 THEN 'MSM'
                                                    WHEN 160579 THEN 'FSW'
+                                                   WHEN 162277 THEN 'People in Prison'
+                                                   WHEN 6096 THEN 'Discordant Couple'
+                                                   WHEN 162198 THEN 'Truck driver'
+                                                   WHEN 159674 THEN 'Fisher folk'
+                                                   WHEN 160666 THEN 'PWUD'
+                                                   WHEN 160666 THEN 'MSW'
                                                    WHEN 1175 THEN 'N/A'
                                                    ELSE null END
                                         from dwapi_etl.etl_patient_hiv_followup f
                                         WHERE f.encounter_id = max(enr.encounter_id)
-                                        group by f.patient_id))                    AS KeyPopulationType,
+                                        group by f.patient_id))                    AS KeyAndVulnerablePopulation,
        case hiv.orphan when 1 THEN 'Yes' when 2 THEN 'No' ELSE null END            as 'Orphan',
        case hiv.in_school when 1 THEN 'Yes' when 2 THEN 'No' ELSE null END         as 'InSchool',
        patAd.county_district                                                       AS PatientResidentCounty,
@@ -151,6 +160,7 @@ from dwapi_etl.etl_hiv_enrollment hiv
       group by Patient_Id, program) as prg on prg.patient_id = d.patient_id
          left join dwapi_etl.etl_contact c
                    on c.client_id = d.patient_id and prg.status = 'Active' and prg.program = 'KP'
+         left join dwapi_etl.etl_kvp_clinical_enrollment kvp on kvp.patient_id = hiv.patient_id
          join kenyaemr_etl.etl_default_facility_info i
 where unique_patient_no is not null
 group by d.patient_id

@@ -10,10 +10,10 @@ SELECT t.patient_id                                                             
        t.visit_date                                                                as VisitDate,
        case t.population_type
            when 164928 then 'General Population'
-           when 164929 then 'Key Population'
+           when 164929 then 'Key and Vulnerable Population'
            when 138643
                then 'Priority Population' end                                      as PopulationType,
-       t.key_population_type                                                       as KeyPopulation,
+       t.key_population_type                                                       as KeyAndVulnerablePopulation,
        t.priority_population_type                                                  as PriorityPopulation,
        t.patient_disabled                                                          as Disability,
        t.disability_type                                                           as DisabilityType,
@@ -109,8 +109,8 @@ SELECT t.patient_id                                                             
        t.known_status_partner                                                      as KnownStatusPartner,
        t.pregnant                                                                  as Pregnant,
        t.breastfeeding_mother                                                      as BreastfeedingMother,
-       t.experienced_gbv                                                           as ExperiencedGBV,
-       t.type_of_gbv                                                               as TypeGBV,
+       t.experienced_gbv                                                           as ExperiencedViolence,
+       t.type_of_gbv                                                               as TypeOfViolence,
        t.service_received                                                          as ReceivedServices,
        t.currently_on_prep                                                         as CurrentlyOnPrEP,
        t.recently_on_pep                                                           as CurrentlyOnPEP,

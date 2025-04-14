@@ -6,6 +6,7 @@ select d.patient_id                 as PatientPK,
        i.FacilityName               as FacilityName,
        d.openmrs_id                 as PatientMNCH_ID,
        d.hei_no                     as PatientHEI_ID,
+       d.nupi                       as NUPI,
        a.1st_DNA_PCR_date           as 1stDNAPCRDate,
        b.2nd_DNA_PCR_date           as 2ndDNAPCRDate,
        c.3rd_DNA_PCR_date           as 3rdDNAPCRDate,
@@ -45,7 +46,7 @@ from dwapi_etl.etl_patient_demographics d
                     from (select t.*,
                                  (@rn := if(@v = patient_id, @rn + 1,
                                             if(@v := patient_id, 1, 1)
-                                     )
+                                         )
                                      ) as rn
                           from dwapi_etl.etl_laboratory_extract t
                                    cross join (select @v := -1, @rn := 0) params
@@ -58,7 +59,7 @@ from dwapi_etl.etl_patient_demographics d
                     from (select t.*,
                                  (@rn := if(@v = patient_id, @rn + 1,
                                             if(@v := patient_id, 1, 1)
-                                     )
+                                         )
                                      ) as rn
                           from dwapi_etl.etl_laboratory_extract t
                                    cross join (select @v := -1, @rn := 0) params
@@ -71,7 +72,7 @@ from dwapi_etl.etl_patient_demographics d
                     from (select t.*,
                                  (@rn := if(@v = patient_id, @rn + 1,
                                             if(@v := patient_id, 1, 1)
-                                     )
+                                         )
                                      ) as rn
                           from dwapi_etl.etl_laboratory_extract t
                                    cross join (select @v := -1, @rn := 0) params
@@ -96,10 +97,10 @@ from dwapi_etl.etl_patient_demographics d
          left join (select x.patient_id,
                            if(mid(min(concat(x.visit_date, x.lab_test)), 11) = 856,
                               mid(min(concat(x.visit_date, x.test_result)), 11), if(
-                                              mid(min(concat(x.visit_date, x.lab_test)), 11) = 1305 and
-                                              mid(min(concat(x.visit_date, x.test_result)), 11) = 1302,
-                                              'LDL', '')) as baseline_vl_results,
-                           min(x.visit_date)              as baseline_vl_date
+                                      mid(min(concat(x.visit_date, x.lab_test)), 11) = 1305 and
+                                      mid(min(concat(x.visit_date, x.test_result)), 11) = 1302,
+                                      'LDL', '')) as baseline_vl_results,
+                           min(x.visit_date)      as baseline_vl_date
                     from dwapi_etl.etl_laboratory_extract x
                     where x.lab_test in (1305, 856)
                     group by x.patient_id) baseline on d.patient_id = baseline.patient_id

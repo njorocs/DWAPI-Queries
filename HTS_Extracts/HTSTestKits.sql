@@ -14,9 +14,13 @@ SELECT t.patient_id                                                      AS Pati
        t.test_2_kit_lot_no                                               as TestKitLotNumber2,
        t.test_2_kit_expiry                                               as TestKitExpiry2,
        t.test_2_result                                                   as TestResult2,
+       t.test_3_kit_name                                                 as TestKitName3,
+       t.test_3_kit_lot_no                                               as TestKitLotNumber3,
+       t.test_3_kit_expiry                                               as TestKitExpiry3,
+       t.test_3_result                                                   as TestResult3,
        t.syphillis_test_result                                           as SyphilisResult,
        t.date_created                                                    as DateCreated,
-       t.date_modified                                                   as DateLastModified,
+       t.date_last_modified                                                   as DateLastModified,
        t.voided                                                          as voided
 FROM dwapi_etl.etl_hts_test t
          inner join dwapi_etl.etl_patient_demographics demographics on t.patient_id = demographics.patient_id

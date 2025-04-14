@@ -76,10 +76,9 @@ from dwapi_etl.etl_patient_demographics d
                                 when 1115 then 'Normal(N)' end                                      as weight_category,
                             case v.stunted when 164085 then 'Yes' when 1115 then 'No' end           as stunted,
                             case v.infant_feeding
-                                when 5526 then 'Exclusive Breastfeeding(EBF)'
-                                when 1595 then 'Exclusive Replacement(ERF)'
-                                when 6046 then 'Mixed Feeding(MF)'
-                                else 'Not Breastfeeding' end                                        as infant_feeding,
+                                when 5526 then 'Exclusive breastfeeding <6 Months(EBF)'
+                                when 5632 then 'Infant Breastfeeding >6 months (BF)'
+                                when 164478 then 'Not Breastfeeding(NBF)' end                       as infant_feeding,
                             concat_ws('|', nullif(case v.azt_given when 'Yes' then 'AZT' when 'No' then '' end, ''),
                                       nullif(case v.nvp_given when 'Yes' then 'NVP' when 'No' then '' end, ''),
                                       nullif(case v.ctx_given when 'Yes' then 'CTX' when 'No' then '' end, ''),

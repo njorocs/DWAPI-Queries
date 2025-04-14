@@ -15,7 +15,7 @@ SELECT d.patient_id                                                      as Pati
        d.marital_status                                                  as MaritalStatus,
        d.occupation                                                      as Occupation,
        t.population_type                                                 as PopulationType,
-       t.key_population_type                                             as KeyPopulationType,
+       t.key_population_type                                             as KeyAndVulnerablePopulation,
        t.priority_population_type                                        as PriorityPopulationType,
        t.patient_disabled                                                as PatientDisabled,
        t.disability_type                                                 as DisabilityType,

@@ -44,6 +44,7 @@ SELECT t.patient_id                                                             
        t.setting                                                                  as Setting,
        t.approach                                                                 as Approach,
        t.test_2_result                                                            as TestResult2,
+       t.test_3_result                                                            as TestResult3,
        t.final_test_result                                                        as FinalTestResult,
        t.patient_given_result                                                     as PatientGivenResult,
        t.tb_screening                                                             as TbScreening,

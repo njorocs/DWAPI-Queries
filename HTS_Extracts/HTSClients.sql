@@ -16,7 +16,7 @@ SELECT d.patient_id                                                      as Pati
        d.occupation                                                      as Occupation,
        t.population_type                                                 as PopulationType,
        t.key_population_type                                             as KeyAndVulnerablePopulation,
-       ''                                                                as PriorityPopulationType,
+       t.priority_population_type                                        as PriorityPopulationType,
        t.patient_disabled                                                as PatientDisabled,
        t.disability_type                                                 as DisabilityType,
        A.county_district                                                 as County,

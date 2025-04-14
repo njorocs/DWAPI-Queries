@@ -61,7 +61,7 @@ select d.patient_id                                                  as PatientP
        e.voided                                                      as voided
 from dwapi_etl.etl_prep_enrolment e
          left join dwapi_etl.etl_person_address pa on e.patient_id = pa.patient_id
-         left join dwapi_etl.etl_prep_followup f on e.patient_id = f.patient_id and f.form = ''
+         left join dwapi_etl.etl_prep_followup f on e.patient_id = f.patient_id and f.form = '1bfb09fc-56d7-4108-bd59-b2765fd312b8'
          inner join dwapi_etl.etl_patient_demographics d on e.patient_id = d.patient_id
          inner join dwapi_etl.etl_prep_behaviour_risk_assessment r on e.patient_id = r.patient_id
          join kenyaemr_etl.etl_default_facility_info i;

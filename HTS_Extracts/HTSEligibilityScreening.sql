@@ -1,7 +1,7 @@
 SELECT t.patient_id                                                                as PatientPK,
        t.uuid                                                                      as uuid,
-       (select siteCode from kenyaemr_etl.etl_default_facility_info)               as SiteCode,
-       (select FacilityName from kenyaemr_etl.etl_default_facility_info)           as FacilityName,
+       i.siteCode                                                                  as SiteCode,
+       i.FacilityName                                                              as FacilityName,
        'KenyaEMR'                                                                  as Emr,
        'Kenya HMIS II'                                                             as Project,
        demographics.openmrs_id                                                     as HtsNumber,
@@ -91,7 +91,11 @@ SELECT t.patient_id                                                             
            when 1 then 'Yes'
            when 0 then 'No'
            end                                                                     as EverHadSex,
-       case t.child_defiled when 1065 then 'Yes' when 1066 then 'No' when 162570 then 'Declined to answer' end as ChildDefiled,
+       case t.child_defiled
+           when 1065 then 'Yes'
+           when 1066 then 'No'
+           when 162570
+               then 'Declined to answer' end                                       as ChildDefiled,
        t.sexually_active                                                           as SexuallyActive,
        t.new_partner                                                               as NewPartner,
        t.partner_hiv_status                                                        as PartnerHIVStatus,
@@ -133,6 +137,7 @@ SELECT t.patient_id                                                             
        t.child_reasons_for_ineligibility                                           as ChildReasonsForIneligibility,
        ''                                                                          as AssessmentOutcome,
        case t.eligible_for_test when 1065 then 'Yes' when 1066 then 'No' end       as EligibleForTest,
+       t.recommended_test                                                          as RecommendedTest,
        case t.referred_for_testing when 1065 then 'Yes' when 1066 then 'No' end    as ReferredForTesting,
        t.reason_to_test                                                            as ReasonRefferredForTesting,
        t.reason_not_to_test                                                        as ReasonNotReffered,
@@ -143,6 +148,4 @@ SELECT t.patient_id                                                             
        t.voided                                                                    as voided
 FROM dwapi_etl.etl_hts_eligibility_screening t
          inner join dwapi_etl.etl_patient_demographics demographics on t.patient_id = demographics.patient_id
-         LEFT JOIN openmrs.location_attribute SC ON SC.location_id = t.location_id AND SC.attribute_type_id = 1
-         LEFT JOIN openmrs.location SN ON SN.location_id = t.location_id
-group by t.encounter_id;
+         JOIN kenyaemr_etl.etl_default_facility_info i;

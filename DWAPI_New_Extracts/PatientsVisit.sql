@@ -296,18 +296,6 @@ select ''                                                                       
             when 1175 then 'N/A' end)                                                   as ClientScreenedforSTI,
        (case fup.experienced_gbv when 1065 then 'Yes' when 1066 then 'No' end)          as ClientGBVVictim,
        (case fup.depression_screening when 1065 then 'Yes' when 1066 then 'No' end)     as ClientScreenedforDepression,
-       (case fup.stability when 1 then 'Established' when 2 then 'Not Established' end) as EstablishementAssessment,
-       (case fup.established_differentiated_care
-            when 164942 then 'Standard Care'
-            when 164943 then 'Fast Track'
-            when 166443 then 'Health care worker Led facility ART group(HFAG)'
-            when 166444 then 'Peer Led Facility ART Group(PFAG)'
-            when 1555 then 'Health care worker Led Community ART group(HCAG)'
-            when 164945 then 'Peer Led Community ART Group(PCAG)'
-            when 1000478 then 'Community Pharmacy(CP)'
-            when 164944 then 'Community ART Distribution Points(CAPD)'
-            when 166583
-                then 'Individual patient ART Community Distribution(IACD)' end)         as EstablishedDifferentiatedCare,
        fup.date_created                                                                 as Date_Created,
        fup.date_last_modified                                                           as Date_Last_Modified,
        fup.voided                                                                       as voided

@@ -28,7 +28,6 @@ select h.patient_id                                                             
        h.vl                                                                              as LastVL,
        h.cd4_count                                                                       as CD4Count,
        if(h.bleeding_disorder = 147241, 'Yes', null)                                     as BleedingDisorder,
-       if(h.diabetes = 119481, 'Yes', null)                                              as Diabetes,
        if(FIND_IN_SET('Urethral Discharge', h.client_presenting_complaints) > 0, 'Yes',
           'No')                                                                          as UrethralDischarge,
        if(FIND_IN_SET('Genital Sore', h.client_presenting_complaints) > 0, 'Yes',

@@ -24,11 +24,16 @@ select p.patient_id                                                             
            when 5622
                then p.specific_other_device end                                             as DeviceName,
        p.device_size                                                                        as DeviceSize,
-       case p.anaesthesia_used
+       case p.anaesthesia_type
            when 16191 then 'Local Anaesthesia'
            when 162797
                then 'Topical Anaesthesia' end                                               as AnaesthesiaUsed,
-       ''                                                                                   as Agent,
+       case p.anaesthesia_used
+           when 103960 then 'Lignocaine + Bupivacaine'
+           when 72505 then 'Bupivacaine'
+           when 104983 then 'Lignocaine + Prilocaine'
+           when 82514 then 'Prilocaine'
+           when 78849 then 'Lignocaine' end                                                 as Agent,
        p.anaesthesia_concentration                                                          as Concentration,
        p.anaesthesia_volume                                                                 as Volume,
        p.time_of_first_placement_cut                                                        as TimePlacementDevice,

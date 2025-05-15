@@ -8,7 +8,7 @@ select d.patient_id                                                             
        p.visit_id                                                                         VisitId,
        p.visit_date                                                                       VisitDate,
        p.pnc_register_no                                                                  PNCRegisterNumber,
-       d.nupi                                                                             NUPI,
+       d.national_unique_patient_identifier                                               NUPI,
        p.pnc_visit_no                                                                     PNCVisitNo,
        (case p.visit_timing_mother
             when 1721 then '0-48 Hours'

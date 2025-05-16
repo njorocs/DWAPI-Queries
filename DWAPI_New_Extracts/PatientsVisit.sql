@@ -296,6 +296,8 @@ select ''                                                                       
             when 1175 then 'N/A' end)                                                   as ClientScreenedforSTI,
        (case fup.experienced_gbv when 1065 then 'Yes' when 1066 then 'No' end)          as ClientGBVVictim,
        (case fup.depression_screening when 1065 then 'Yes' when 1066 then 'No' end)     as ClientScreenedforDepression,
+       dg.diagnosis                                                                     as Diagnosis,
+       do.drug_name                                                                     as Treatment,
        fup.date_created                                                                 as Date_Created,
        fup.date_last_modified                                                           as Date_Last_Modified,
        fup.voided                                                                       as voided
@@ -322,6 +324,30 @@ from dwapi_etl.etl_patient_demographics d
                     from dwapi_etl.etl_drug_event de
                     where de.discontinued is null
                     group by de.patient_id) de on fup.patient_id = de.patient_id
+         left join (SELECT d.patient_id,
+                           d.date_created                                AS diagnosisDate,
+                           d.encounter_id,
+                           GROUP_CONCAT(DISTINCT n.name SEPARATOR ' | ') AS diagnosis,
+                           d.uuid
+                    FROM openmrs.encounter_diagnosis d
+                             INNER JOIN openmrs.concept_name n
+                                        ON d.diagnosis_coded = n.concept_id
+                                            AND n.locale = 'en'
+                    WHERE n.concept_name_type = 'FULLY_SPECIFIED'
+                      AND d.voided = 0
+                    GROUP BY d.patient_id, DATE(d.date_created)) dg
+                   ON fup.patient_id = dg.patient_id and fup.visit_date = date(dg.diagnosisDate)
+         LEFT JOIN (SELECT do.patient_id,
+                           do.encounter_id,
+                           DATE(do.visit_date)                                 AS visit_date,
+                           GROUP_CONCAT(DISTINCT do.drug_name SEPARATOR ' + ') AS drug_name,
+                           MAX(do.date_last_modified)                          AS date_last_modified,
+                           MAX(do.voided)                                      AS voided
+                    FROM dwapi_etl.etl_drug_order do
+                    WHERE do.voided = 0
+                    GROUP BY do.patient_id, DATE(do.visit_date)) do
+                   ON fup.patient_id = do.patient_id
+                       AND fup.visit_date = do.visit_date
 where d.unique_patient_no is not null
   and fup.visit_date > '1990-01-01'
   and fup.next_appointment_date is not null

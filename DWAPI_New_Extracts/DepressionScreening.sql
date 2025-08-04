@@ -8,15 +8,15 @@ select v.patient_id                                   as PatientPK,
        s.FacilityName                                 as FacilityName,
        v.visit_id                                     as VisitID,
        v.visit_date                                   as VisitDate,
-       ''                                             as PHQ9_1,
-       ''                                             as PHQ9_2,
-       ''                                             as PHQ9_3,
-       ''                                             as PHQ9_4,
-       ''                                             as PHQ9_5,
-       ''                                             as PHQ9_6,
-       ''                                             as PHQ9_7,
-       ''                                             as PHQ9_8,
-       ''                                             as PHQ9_9,
+       (case v.little_interest when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_1, -- little_interest
+       (case v.feeling_down when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_2, -- feeling_down
+       (case v.trouble_sleeping when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_3, -- trouble_sleeping
+       (case v.feeling_tired when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_4, -- feeling_tired
+       (case v.poor_appetite when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_5, -- poor_appetite
+       (case v.feeling_bad when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_6, -- feeling_bad
+       (case v.trouble_concentrating when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_7, -- trouble_concentrating
+       (case v.moving_or_speaking_slowly when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_8, -- moving_or_speaking_slowly
+       (case v.self_hurtful_thoughts when 163733 then 'Not at all' when 163734 then 'Several days' when 163735 then 'More than half the days' when 163736 then 'Nearly every day' end) AS PHQ9_9, -- self_hurtful_thoughts
        (case v.PHQ_9_rating
             when 1115 then 'Depression unlikely'
             when 157790 then 'Mild depression'

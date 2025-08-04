@@ -1,0 +1,1 @@
+select property AS EMR, property_value AS EMRVersion from openmrs.global_property p where p.property = 'kenyaemr.version';

@@ -1,0 +1,1 @@
+select property, property_value from global_property p where p.property = 'kenyaemr.version';

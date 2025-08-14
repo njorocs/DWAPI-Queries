@@ -70,7 +70,7 @@ select d.patient_id                                                             
                then 'Negative' end                                                              HIVStatusBeforeANC,
        if(a.final_test_result is not null, 'Yes',
           'No')                                                                                 HIVTestingDone,
-       ''                                                                                       HIVTestType,
+       a.hiv_test_type                                                                          HIVTestType,
        a.test_1_kit_name                                                                        HIVTest_1,
        a.test_1_result                                                                          HIVTest_1Result,
        a.test_2_kit_name                                                                        HIVTest_2,

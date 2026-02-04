@@ -9,7 +9,10 @@ select d.patient_id                                                  as PatientP
        'KenyaEMR'                                                    as Emr,
        'HMIS'                                                        as Project,
        e.visit_date                                                  as PrEPEnrolmentDate,
-       e.prep_type                                                   as TypeOfPrEP,
+       e.prep_type                                                   as TypeOfPrep,
+       f.switching_option                                            as ReasonForSwitching,
+       f.switching_date                                              as DateofSwitch,
+       f.dosing_strategy                                             as DosingStrategy,
        case d.gender when 'M' then 'Male' when 'F' then 'Female' end as Sex,
        d.dob                                                         as DateOfBirth,
        d.birth_place                                                 as CountyOfBirth,
@@ -52,7 +55,8 @@ select d.patient_id                                                  as PatientP
            when 1691 then 'Recurrent use of PEP'
            when 165090 then 'Injection drug use with shared needles'
            when 165089 then 'Inconsistent or no condom use during intercourse'
-           when 5622 then 'Other reasons' end                        as ReasonForPrep,
+           when 5622 then 'Other reasons' end                        as ReasonForPrep,          
+ 	    f.other_reason_for_prep                                          as OtherReasonForPrep,
        e.previously_on_prep                                          as ClientPreviouslyOnPrEP,
        e.regimen                                                     as PrevPrepReg,
        e.prep_last_date                                              as DateLastUsed_Prev,

@@ -23,6 +23,7 @@ select d.patient_id                                                             
                  case sharing_drug_needles
                      when 'Yes' then 'IDU with shared needles and/or syringes'
                      end, other_reason_specify)                                     as ClientAssessments,
+       h.on_contraceptives                                                         as OnContraceptives,
        h.assessment_outcome                                                         as ClientRisk,
        h.willing_to_take_prep                                                       as ClientWillingToTakePrEP,
        h.reason_not_willing                                                         as PrEPDeclineReason,

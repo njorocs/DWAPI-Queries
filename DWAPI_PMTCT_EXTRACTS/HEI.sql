@@ -6,7 +6,7 @@ select d.patient_id                 as PatientPK,
        i.FacilityName               as FacilityName,
        d.openmrs_id                 as PatientMNCH_ID,
        d.hei_no                     as PatientHEI_ID,
-       d.nupi                       as NUPI,
+       d.national_unique_patient_identifier                       as NUPI,
        a.1st_DNA_PCR_date           as 1stDNAPCRDate,
        b.2nd_DNA_PCR_date           as 2ndDNAPCRDate,
        c.3rd_DNA_PCR_date           as 3rdDNAPCRDate,
@@ -32,8 +32,10 @@ from dwapi_etl.etl_patient_demographics d
                             m.exit_date                                       as exit_date,
                             case m.exit_reason
                                 when 1403 then 'HIV Neg age >18 months'
-                                when 5240 then 'Lost'
+                                when 5240 then 'Lost to follow up'
                                 when 160432 then 'Dead'
+                                when 664 then 'Negative'
+                                when 703 then 'Positive'
                                 when 159492 then 'Transfer Out'
                                 when 138571 then 'Confirmed HIV Positive' end as exit_reason,
                             m.date_created                                    as Date_Created,

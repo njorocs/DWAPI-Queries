@@ -70,7 +70,7 @@ select d.patient_id                                                             
                then 'Negative' end                                                              HIVStatusBeforeANC,
        if(a.final_test_result is not null, 'Yes',
           'No')                                                                                 HIVTestingDone,
-       a.hiv_test_type                                                                          HIVTestType,
+       null                                                                                     HIVTestType,
        a.test_1_kit_name                                                                        HIVTest_1,
        a.test_1_result                                                                          HIVTest_1Result,
        a.test_2_kit_name                                                                        HIVTest_2,
@@ -97,10 +97,15 @@ select d.patient_id                                                             
        case a.prophylaxis_given
            when 105281 then 'Yes'
            when 74250 then 'Yes'
-           when 1107 then 'No' end                                                              MotherProphylaxisGiven,
+           when 1107
+               then 'No' end                                                                    MotherProphylaxisGiven,
        a.date_given_haart                                                                       DateMotherStartedHAART,
        if(a.baby_azt_dispensed = 160123 AND a.baby_nvp_dispensed = 80586, 'AN',
           if(a.baby_azt_dispensed = 160123, 'A', if(a.baby_nvp_dispensed = 160123, 'N', NULL))) InfantProphylaxis,
+       case a.ABC_3TC_DTG_baby_prophylaxis_dispensed
+           when 1065 then 'Yes'
+           when 1066
+               then 'No' end                     as                                             ABC_3TC_DTG_dispensed,
        case a.baby_azt_dispensed
            when 160123 then 'Yes'
            when 1066 then 'No'
@@ -157,8 +162,15 @@ select d.patient_id                                                             
        (case a.hepatitis_b_screening
             when 703 then "Positive"
             when 664 then "Negative"
-            when 160737 then "Not Done" end)                                                    HepatitisBScreening,
-       (case a.hepatitis_b_treatment when 1065 then "Yes" when 1066 then "No" end)              TreatedHepatitisB,
+            when 165649 then "Inconclusive"
+            when 160737
+                then "Not Done" end)                                                            HepatitisBScreening,
+       (case a.maternal_Hep_B_management
+            when 1107 then "None"
+            when 1185 then "Treatment"
+            when 2032267
+                then "Prophylaxis" end)                                                         HepBMaternalManagement,
+       case a.client_has_partner when 1065 then 'Yes' when 1066 then 'No' end                   ClientPartner,
        case a.partner_hiv_tested
            when 1065 then 'Yes'
            when 1066 then 'No'
@@ -166,8 +178,10 @@ select d.patient_id                                                             
        case a.partner_hiv_status
            when 703 then 'HIV Positive'
            when 664 then 'HIV Negative'
+           when 1000164 then 'Known HIV Status'
            when 1067
                then 'UNKNOWN' end                                                               PartnerHIVStatusANC,
+       a.partner_hiv_test_date                                                                  PartnerHIVTestDate,
        (case a.fp_method_postpartum
             when 5275 then "IUD"
             when 159589 then "Implants"
@@ -217,14 +231,16 @@ select d.patient_id                                                             
            when 163488 then 'Community Unit'
            when 1175 then 'N/A' END                                                             ReferredFrom,
        case a.referred_to
+           when 163266 then 'This health facility'
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
            when 165093 then 'HIV preventive services'
+           when 166100 then 'Referral to PLHIV networks'
            when 1175 then 'N/A' END              as                                             ReferredTo,
        ''                                                                                       ReferralReasons,
        a.next_appointment_date                                                                  NextAppointmentANC,
        a.clinical_notes                          as                                             ClinicalNotes,
-       d.nupi                                    as                                             NUPI,
+       d.national_unique_patient_identifier      as                                             NUPI,
        a.date_created                                                                           Date_Created,
        GREATEST(COALESCE(a.date_last_modified, e.date_last_modified, ci.date_last_modified),
                 COALESCE(a.date_last_modified, e.date_last_modified,

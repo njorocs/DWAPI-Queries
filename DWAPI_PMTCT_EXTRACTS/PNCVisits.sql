@@ -135,6 +135,7 @@ select d.patient_id                                                             
        case p.partner_hiv_status
            when 703 then 'Positive'
            when 664 then 'Negative'
+           when 1000164 then 'Known HIV Status'
            when 1067 then 'Unknown' end                                                as PartnerHIVResultPNC,
        case p.family_planning_counseling
            when 1065 then 'Yes'
@@ -191,6 +192,8 @@ select d.patient_id                                                             
        case p.referred_to
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
+           when 165062 then 'Transfer within the facility'
+           when 166100 then 'Referral to PLHIV networks'
            when 1175 then 'N/A' end                                                    as ReferredTo,
        p.referral_reason                                                               as ReferralReason,
        p.appointment_date                                                              as NextAppointmentPNC,

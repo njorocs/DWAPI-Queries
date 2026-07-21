@@ -12,8 +12,8 @@ select pkv.pkv                                                              as P
        i.FacilityName                                                       as FacilityName,
        (case d.Gender when 'F' then 'Female' when 'M' then 'Male' end)      as Gender,
        d.DOB                                                                as DOB,
-       coalesce(c.hei_enrolment_date, m.mch_enrolment_date)                 as FirstEnrollmentAtMnch,
-       coalesce(c.hei_encounter_id, m.mch_encounter_id, r.fup_encounter_id) as EncounterId,
+       coalesce(l.delivery_visit_date, m.enrolment_date)                    as FirstEnrollmentAtMnch,
+       l.del_encounter_id                                                   as EncounterId,
        d.occupation                                                         as Occupation,
        d.marital_status                                                     as MaritalStatus,
        d.education_level                                                    as EducationLevel,
@@ -23,28 +23,37 @@ select pkv.pkv                                                              as P
        (case e.in_school when 1 then 'Yes' when 2 then 'No' end)            as Inschool,
        d.date_created                                                       as Date_Created,
        d.date_last_modified                                                 as Date_Last_Modified,
-       d.voided                                                             as voided
+       (case
+            when d.voided = 1
+                or coalesce(m.enrollment_voided, 0) = 1
+                or coalesce(l.delivery_voided, 0) = 1
+                then 1 else 0 end)                                          as voided
 from dwapi_etl.etl_patient_demographics d
          left join (select m.patient_id,
-                           min(date(m.visit_date))                                  as mch_enrolment_date,
-                           mid(min(concat(date(m.visit_date), m.encounter_id)), 11) as mch_encounter_id
-                    from dwapi_etl.etl_mch_enrollment m
-                    group by m.patient_id) m on d.patient_id = m.patient_id
-         left join (select c.patient_id,
-                           min(date(c.visit_date))                                  as hei_enrolment_date,
-                           mid(min(concat(date(c.visit_date), c.encounter_id)), 11) as hei_encounter_id
-                    from dwapi_etl.etl_hei_enrollment c
-                    group by c.patient_id) c on d.patient_id = c.patient_id
-         left join (select a.patient_id, a.county, a.sub_county, a.ward from dwapi_etl.etl_person_address a) a
+                           m.date_enrolled as enrolment_date,
+                           m.voided        as enrollment_voided
+                    from dwapi_etl.etl_patient_program m
+                    where m.program in ('MCH-Child Services', 'Antenatal Care', 'Postnatal Care', 'MCH-Mother Services')
+                      and m.date_completed is null) m on d.patient_id = m.patient_id
+         left join (select l.patient_id,
+                           max(date(l.visit_date))                                                as delivery_visit_date,
+                           cast(substring(max(concat(date(l.visit_date), lpad(l.encounter_id, 10, '0'),
+                                                     coalesce(l.voided, 0))), 11, 10) as unsigned) as del_encounter_id,
+                           substring(max(concat(date(l.visit_date), lpad(l.encounter_id, 10, '0'),
+                                                coalesce(l.voided, 0))), 21)                       as delivery_voided
+                    from dwapi_etl.etl_mchs_delivery l
+                    group by l.patient_id) l on d.patient_id = l.patient_id
+         left join (select a.patient_id, a.county, a.sub_county, a.ward
+                    from dwapi_etl.etl_person_address a
+                             inner join (select ia.patient_id, max(ia.uuid) as uuid
+                                         from dwapi_etl.etl_person_address ia
+                                         group by ia.patient_id) latest_addr
+                                        on a.uuid = latest_addr.uuid) a
                    on d.patient_id = a.patient_id
-         left join (select r.person_a, mid(min(concat(date(fup.visit_date), fup.encounter_id)), 11) as fup_encounter_id
-                    from dwapi_etl.etl_patient_hiv_followup fup
-                             inner join openmrs.relationship r on fup.patient_id = r.person_a
-                             inner join openmrs.relationship_type t on r.relationship = t.relationship_type_id and
-                                                                       t.uuid in
-                                                                       ('8d91a210-c2cc-11de-8d13-0010c6dffd0f')
-                    group by r.person_a) r on d.patient_id = r.person_a
-         left join (select e.patient_id as patient_id, e.in_school as in_school from dwapi_etl.etl_hiv_enrollment e) e
+         inner join (select e.patient_id,
+                            mid(max(concat(date(e.visit_date), coalesce(e.in_school, ''))), 11) as in_school
+                     from dwapi_etl.etl_hiv_enrollment e
+                     group by e.patient_id) e
                    on d.patient_id = e.patient_id
          inner join (select x.patient_id as patient_id,
                             x.sxFirstName,
@@ -83,6 +92,4 @@ from dwapi_etl.etl_patient_demographics d
                            FROM dwapi_etl.etl_patient_demographics) x) pkv on pkv.patient_id = d.patient_id
          join kenyaemr_etl.etl_default_facility_info i
 where m.patient_id is not null
-   or c.patient_id is not null
-   or r.person_a is not null
-group by EncounterId;
+   or l.patient_id is not null;

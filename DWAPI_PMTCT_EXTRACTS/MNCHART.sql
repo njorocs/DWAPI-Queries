@@ -1,79 +1,279 @@
-select d.patient_id                                                                          as PatientPK,
-       de.uuid                                                                               as uuid,
-       i.siteCode                                                                            as SiteCode,
-       d.openmrs_id                                                                          as PatientMNCHCWC_ID,
-       d.hei_no                                                                              as PatientHEI_ID,
-       d.unique_patient_no                                                                   as PatientID,
-       'KenyaEMR'                                                                            as Emr,
-       'Kenya HMIS II'                                                                       as Project,
-       i.FacilityName                                                                        as FacilityName,
-       e.date_first_enrolled_in_care                                                         as RegistrationAtCCC,
-       least(ifnull(mid(min(concat(e.visit_date, e.date_started_art_at_transferring_facility)), 11),
-                    de.date_started_art + interval rand() * 1000 year), de.date_started_art) as StartARTDate,
-       m.ti_care_facility                                                                    as FacilityReceivingARTCare,
-       de.start_regimen                                                                      as StartRegimen,
-       de.start_regimen_line                                                                 as StartRegimenLine,
-       if(p.patient_id is null, 'ACTIVE', p.status_at_ccc)                                   as StatusAtCCC,
-       de.last_art_date                                                                      as DateStartedCurrentRegimen,
-       de.last_regimen                                                                       as LastRegimen,
-       de.last_regimen_line                                                                  as LastRegimenLine,
-       de.Date_Created                                                                       as Date_Created,
-       de.Date_Last_Modified                                                                 as Date_Last_Modified,
-       de.voided                                                                             as voided
-from dwapi_etl.etl_patient_demographics d
-         left join (select m.patient_id,
-                           m.uuid,
-                           min(m.visit_date) as first_mch_enrolment_date,
-                           m.ti_care_facility,
-                           m.ti_curent_regimen,
-                           m.ti_date_started_art,
-                           m.date_last_modified,
-                           m.voided
-                    from dwapi_etl.etl_mch_enrollment m
-                    group by m.patient_id) m on d.patient_id = m.patient_id
-         left join (select c.patient_id, min(c.visit_date) as first_hei_enrolment_date, c.date_last_modified
-                    from dwapi_etl.etl_hei_enrollment c
-                    group by c.patient_id) c on d.patient_id = c.patient_id
-         left join (select e.patient_id,
-                           e.uuid,
-                           e.visit_date,
-                           e.date_started_art_at_transferring_facility,
-                           least(min(e.visit_date), mid(min(concat(e.visit_date,
-                                                                   coalesce(e.date_first_enrolled_in_care, date('9999-12-31')))),
-                                                        11)) as date_first_enrolled_in_care,
-                           e.date_last_modified,
-                           e.voided
-                    from dwapi_etl.etl_hiv_enrollment e
-                    group by e.patient_id) e on d.patient_id = e.patient_id
-         left join (select de.patient_id,
-                           de.uuid as uuid,
-                           min(de.date_started)                                   as date_started_art,
-                           mid(min(concat(de.date_started, de.regimen_name)), 11) as start_regimen,
-                           mid(min(concat(de.date_started, de.regimen_line)), 11) as start_regimen_line,
-                           mid(max(concat(de.date_started, de.regimen_name)), 11) as last_regimen,
-                           max(de.date_started)                                   as last_art_date,
-                           mid(max(concat(de.date_started, de.regimen_line)), 11) as last_regimen_line,
-                           de.date_created                                        as Date_Created,
-                           de.date_last_modified                                  as Date_Last_Modified,
-                           de.voided as voided
-                    from dwapi_etl.etl_drug_event de where de.program = 'HIV'
-                    group by de.patient_id) de on d.patient_id = de.patient_id
-         left join (select p.patient_id,
-                           max(date(p.visit_date))                                                    as latest_disc,
-                           mid(max(concat(date(p.visit_date), (case p.discontinuation_reason
-                                                                   when 159492 then 'TransferOut'
-                                                                   when 5240 then 'LTFU'
-                                                                   when 160034 then 'Dead'
-                                                                   when 5622 then 'OTHER' end))), 11) as status_at_ccc,
-                           date_last_modified
-                    from dwapi_etl.etl_patient_program_discontinuation p
-                    group by p.patient_id
-                    having mid(max(concat(date(p.visit_date), p.program_name)), 11) = 'HIV') p
-                   on d.patient_id = p.patient_id
-         join kenyaemr_etl.etl_default_facility_info i
-where (m.patient_id is not null
-    and e.patient_id is not null)
-   or (m.patient_id is not null and
-       (m.ti_date_started_art is not null or m.ti_care_facility is not null or m.ti_curent_regimen is not null))
-   or (c.patient_id is not null and e.patient_id is not null)
-group by d.patient_id;
+WITH
+    facility_info AS (
+        SELECT
+            SiteCode,
+            FacilityName
+        FROM kenyaemr_etl.etl_default_facility_info
+        LIMIT 1
+    ),
+    patient_demographics AS (
+        SELECT
+            patient_id,
+            openmrs_id,
+            hei_no,
+            unique_patient_no
+        FROM dwapi_etl.etl_patient_demographics
+    ),
+    program_discontinuations AS (
+        SELECT
+            patient_id,
+            program_name,
+            DATE(visit_date) AS discontinuation_date,
+            discontinuation_reason,
+            date_last_modified
+        FROM dwapi_etl.etl_patient_program_discontinuation
+    ),
+    program_status AS (
+        SELECT
+            p.patient_id,
+            p.program,
+            p.date_enrolled,
+            p.date_completed,
+            CASE
+                WHEN p.date_completed IS NULL THEN 'Active'
+                WHEN d.discontinuation_reason = 160035 THEN 'Completed'
+                WHEN d.discontinuation_reason = 1267 THEN 'Completed'
+                WHEN d.discontinuation_reason = 159492 THEN 'Transferred Out'
+                WHEN d.discontinuation_reason = 160034 THEN 'Dead'
+                WHEN d.discontinuation_reason = 5240 THEN 'Lost to Follow up'
+                WHEN d.discontinuation_reason = 5622 THEN 'Other'
+                ELSE 'Unknown'
+                END AS status,
+            d.discontinuation_reason
+        FROM dwapi_etl.etl_patient_program p
+                 LEFT JOIN program_discontinuations d
+                           ON p.patient_id = d.patient_id
+                               AND p.program = d.program_name
+                               AND p.date_completed = d.discontinuation_date
+    ),
+    hiv_program_status AS (
+        SELECT
+            patient_id,
+            status
+        FROM (
+                 SELECT
+                     ps.patient_id,
+                     ps.status,
+                     ROW_NUMBER() OVER (
+                         PARTITION BY ps.patient_id
+                         ORDER BY ps.date_enrolled DESC
+                         ) AS rn
+                 FROM program_status ps
+                 WHERE ps.program = 'HIV'
+             ) t
+        WHERE rn = 1
+    ),
+    hiv_enrollment AS (
+        SELECT
+            patient_id,
+            MAX(uuid) AS uuid,
+            MIN(visit_date) AS hiv_enrollment_date,
+            MIN(COALESCE(date_first_enrolled_in_care, visit_date)) AS registration_at_ccc,
+            MIN(date_started_art_at_transferring_facility) AS transfer_in_art_date,
+            MAX(date_last_modified) AS date_last_modified,
+            MAX(voided) AS voided
+        FROM dwapi_etl.etl_hiv_enrollment
+        GROUP BY patient_id
+    ),
+    art_events AS (
+        SELECT
+            patient_id,
+            date_started,
+            regimen_name,
+            regimen_line,
+            uuid,
+            date_created,
+            date_last_modified,
+            voided,
+            ROW_NUMBER() OVER (
+                PARTITION BY patient_id
+                ORDER BY date_started ASC, encounter_id ASC
+                ) AS first_art_rank,
+            ROW_NUMBER() OVER (
+                PARTITION BY patient_id
+                ORDER BY date_started DESC, encounter_id DESC
+                ) AS current_art_rank
+        FROM dwapi_etl.etl_drug_event
+        WHERE program = 'HIV'
+    ),
+    first_art AS (
+        SELECT
+            patient_id,
+            date_started AS start_art_date,
+            regimen_name AS start_regimen,
+            regimen_line AS start_regimen_line
+        FROM art_events
+        WHERE first_art_rank = 1
+    ),
+    current_art AS (
+        SELECT
+            patient_id,
+            date_started AS current_regimen_date,
+            regimen_name AS current_regimen,
+            regimen_line AS current_regimen_line,
+            date_created,
+            date_last_modified,
+            voided
+        FROM art_events
+        WHERE current_art_rank = 1
+    ),
+    legacy_mch AS (
+        SELECT
+            m.patient_id,
+            m.uuid,
+            m.visit_date AS enrollment_date,
+            'LEGACY_MCH' AS source_type,
+            1 AS priority,
+            ps.status AS mch_status,
+            ps.date_completed,
+            m.date_last_modified,
+            m.voided
+        FROM dwapi_etl.etl_mch_enrollment m
+                 LEFT JOIN program_status ps
+                           ON ps.patient_id = m.patient_id
+                               AND ps.program = 'MCH-Mother'
+    ),
+    anc_initial AS (
+        SELECT
+            a.patient_id,
+            a.uuid,
+            a.visit_date AS enrollment_date,
+            'ANC' AS source_type,
+            2 AS priority,
+            ps.status AS mch_status,
+            ps.date_completed,
+            a.date_last_modified,
+            a.voided
+        FROM dwapi_etl.etl_mch_antenatal_visit a
+                 LEFT JOIN program_status ps
+                           ON ps.patient_id = a.patient_id
+                               AND ps.program = 'MCH-ANC'
+        WHERE a.anc_visit_number = 1
+    ),
+    pnc_initial AS (
+        SELECT
+            p.patient_id,
+            p.uuid,
+            p.visit_date AS enrollment_date,
+            'PNC' AS source_type,
+            3 AS priority,
+            ps.status AS mch_status,
+            ps.date_completed,
+            p.date_last_modified,
+            p.voided
+        FROM dwapi_etl.etl_mch_postnatal_visit p
+                 LEFT JOIN program_status ps
+                           ON ps.patient_id = p.patient_id
+                               AND ps.program = 'MCH-PNC'
+        WHERE p.pnc_visit_no = 1
+    ),
+    delivery_events AS (
+        SELECT
+            d.patient_id,
+            d.uuid,
+            d.visit_date AS enrollment_date,
+            'DELIVERY' AS source_type,
+            4 AS priority,
+            'Completed' AS mch_status,
+            d.visit_date AS date_completed,
+            d.date_last_modified,
+            d.voided
+        FROM dwapi_etl.etl_mchs_delivery d
+    ),
+    hei_enrollment AS (
+        SELECT
+            h.patient_id,
+            h.uuid,
+            h.visit_date AS enrollment_date,
+            'HEI' AS source_type,
+            5 AS priority,
+            ps.status AS mch_status,
+            ps.date_completed,
+            h.date_last_modified,
+            h.voided
+        FROM dwapi_etl.etl_hei_enrollment h
+                 LEFT JOIN program_status ps
+                           ON ps.patient_id = h.patient_id
+                               AND ps.program = 'MCH-Child Services'
+    ),
+    mch_sources AS (
+        SELECT * FROM legacy_mch
+        UNION ALL
+        SELECT * FROM anc_initial
+        UNION ALL
+        SELECT * FROM pnc_initial
+        UNION ALL
+        SELECT * FROM delivery_events
+        UNION ALL
+        SELECT * FROM hei_enrollment
+    ),
+    canonical_mch AS (
+        SELECT *
+        FROM (
+                 SELECT
+                     s.*,
+                     ROW_NUMBER() OVER (
+                         PARTITION BY patient_id
+                         ORDER BY priority, enrollment_date, uuid
+                         ) AS rn
+                 FROM mch_sources s
+             ) ranked
+        WHERE rn = 1
+    ),
+    eligible_patients AS (
+        SELECT
+            pd.patient_id,
+            pd.openmrs_id,
+            pd.unique_patient_no,
+            pd.hei_no,
+            h.uuid AS hiv_uuid,
+            h.hiv_enrollment_date,
+            h.registration_at_ccc,
+            h.transfer_in_art_date,
+            fa.start_art_date,
+            fa.start_regimen,
+            fa.start_regimen_line,
+            ca.current_regimen_date,
+            ca.current_regimen,
+            ca.current_regimen_line,
+            ca.date_created AS art_date_created,
+            ca.date_last_modified AS art_date_last_modified,
+            ca.voided AS art_voided,
+            hps.status AS ccc_status,
+            cm.source_type,
+            cm.enrollment_date AS mch_enrollment_date,
+            cm.mch_status,
+            cm.date_completed AS mch_exit_date,
+            cm.date_last_modified,
+            cm.voided
+        FROM patient_demographics pd
+                 INNER JOIN hiv_enrollment h ON pd.patient_id = h.patient_id
+                 INNER JOIN first_art fa ON pd.patient_id = fa.patient_id
+                 INNER JOIN current_art ca ON pd.patient_id = ca.patient_id
+                 INNER JOIN canonical_mch cm ON pd.patient_id = cm.patient_id
+                 LEFT JOIN hiv_program_status hps ON pd.patient_id = hps.patient_id
+    )
+SELECT
+    ep.patient_id                AS PatientPK,
+    ep.hiv_uuid                  AS uuid,
+    f.SiteCode                   AS SiteCode,
+    ep.openmrs_id                AS PatientMNCHCWC_ID,
+    ep.hei_no                    AS PatientHEI_ID,
+    ep.unique_patient_no         AS PatientID,
+    'KenyaEMR'                   AS Emr,
+    'Kenya HMIS II'              AS Project,
+    f.FacilityName               AS FacilityName,
+    ep.registration_at_ccc       AS RegistrationAtCCC,
+    ep.start_art_date            AS StartARTDate,
+    f.FacilityName               AS FacilityReceivingARTCare,
+    ep.start_regimen             AS StartRegimen,
+    ep.start_regimen_line        AS StartRegimenLine,
+    ep.ccc_status                AS StatusAtCCC,
+    ep.current_regimen_date      AS DateStartedCurrentRegimen,
+    ep.current_regimen           AS LastRegimen,
+    ep.current_regimen_line      AS LastRegimenLine,
+    ep.art_date_created          AS Date_Created,
+    ep.art_date_last_modified    AS Date_Last_Modified,
+    ep.art_voided                AS voided
+FROM eligible_patients ep
+         CROSS JOIN facility_info f;

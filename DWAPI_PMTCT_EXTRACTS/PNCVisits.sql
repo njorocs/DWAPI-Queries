@@ -105,10 +105,7 @@ select d.patient_id                                                             
            when 703 then 'Confirmed'
            when 1118 then 'Not done'
            when 1175 then 'N/A' end                                                    as CACxScreenResults,
-       case e.hiv_status
-           when 703 then 'Positive'
-           when 664 then 'Negative'
-           when 1067 then 'Unknown' end                                                as PriorHIVStatus,
+       p.hiv_test_type                                                                 as PriorHIVStatus,
        (case p.infant_prophylaxis_timing
             when 1065 then 'Less than 6 weeks'
             when 1066 then 'Greater 6 weeks' end)                                         InfactCameForHAART,
@@ -203,9 +200,6 @@ select d.patient_id                                                             
        p.voided                                                                        as voided
 from dwapi_etl.etl_patient_demographics d
          inner join dwapi_etl.etl_mch_postnatal_visit p on d.patient_id = p.patient_id
-         inner join (select e.patient_id, mid(max(concat(e.visit_date, e.hiv_status)), 11) as hiv_status
-                     from dwapi_etl.etl_mch_enrollment e
-                     group by e.patient_id) e on d.patient_id = e.patient_id
          left join (select tb.patient_id, tb.resulting_tb_status, tb.visit_date
                     from dwapi_etl.etl_tb_screening tb) tb
                    on tb.patient_id = p.patient_id and tb.visit_date = p.visit_date

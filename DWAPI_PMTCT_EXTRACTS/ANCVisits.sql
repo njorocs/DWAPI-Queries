@@ -1,5 +1,5 @@
 select d.patient_id                                                                             PatientPK,
-       a.uuid                                    as                                             uuid,
+       a.uuid                                                          as                       uuid,
        i.siteCode                                                                               SiteCode,
        d.openmrs_id                                                                             PatientMNCH_ID,
        'KenyaEMR'                                                                               Emr,
@@ -7,7 +7,7 @@ select d.patient_id                                                             
        i.facilityName                                                                           FacilityName,
        a.visit_id                                                                               VisitId,
        a.visit_date                                                                             VisitDate,
-       e.anc_number                                                                             ANCClinicNumber,
+       a.anc_number                                                                             ANCClinicNumber,
        a.anc_visit_number                                                                       ANCVisitNo,
        a.maturity                                                                               GestationWeeks,
        round(a.height, 2)                                                                       Height,
@@ -63,14 +63,19 @@ select d.patient_id                                                             
            when 1065 then 'Yes'
            when 1066 then 'No'
            else 'NA' end                                                                        SyphilisTreatment,
-       case e.hiv_status
-           when 703 then 'KP'
+       case a.hiv_test_during_visit
+           when 169173 then 'KP'
            when 1067 then 'Unknown'
            when 664
                then 'Negative' end                                                              HIVStatusBeforeANC,
        if(a.final_test_result is not null, 'Yes',
           'No')                                                                                 HIVTestingDone,
-       null                                                                                     HIVTestType,
+       case a.hiv_test_during_visit
+           when 164180 then 'Initial'
+           when 160530 then 'Retest'
+           when 169173 then 'Known positive'
+           when 164142 then 'Revisit'
+           when 1118 then 'ND' end                                                              HIVTestType,
        a.test_1_kit_name                                                                        HIVTest_1,
        a.test_1_result                                                                          HIVTest_1Result,
        a.test_2_kit_name                                                                        HIVTest_2,
@@ -190,7 +195,7 @@ select d.patient_id                                                             
        case a.intermittent_presumptive_treatment_given
            when 1065 then 'Yes'
            when 1066 then 'No'
-           when 1175 then 'Not Applicable' end   as                                             MalariaProphylaxis,
+           when 1175 then 'Not Applicable' end                         as                       MalariaProphylaxis,
        a.TTT                                                                                    TetanusDose,
        a.iron_supplement                                                                        IronSupplementsGiven,
        case a.counselled_on_treated_nets when 1381 then 'Yes' end                               ReceivedMosquitoNet,
@@ -202,7 +207,7 @@ select d.patient_id                                                             
                  nullif(case a.counselled_on_treated_nets
                             when 1381
                                 then 'Long-Lasting Insecticidal Net' end,
-                        ''))                     as                                             PreventiveServices,
+                        ''))                                           as                       PreventiveServices,
        (case a.intermittent_presumptive_treatment_given
             when 1065 then "Yes"
             when 1066 then "No"
@@ -235,21 +240,20 @@ select d.patient_id                                                             
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
            when 165093 then 'HIV preventive services'
+           when 1175 then 'N/A' END                                    as                       ReferredTo,
            when 166100 then 'Referral to PLHIV networks'
            when 1175 then 'N/A' END              as                                             ReferredTo,
        ''                                                                                       ReferralReasons,
        a.next_appointment_date                                                                  NextAppointmentANC,
-       a.clinical_notes                          as                                             ClinicalNotes,
-       d.national_unique_patient_identifier      as                                             NUPI,
+       a.clinical_notes                                                as                       ClinicalNotes,
+       d.national_unique_patient_identifier                            as                       NUPI,
        a.date_created                                                                           Date_Created,
-       GREATEST(COALESCE(a.date_last_modified, e.date_last_modified, ci.date_last_modified),
-                COALESCE(a.date_last_modified, e.date_last_modified,
-                         ci.date_last_modified)) as                                             Date_Last_Modified,
-       a.voided                                  as                                             voided
+       GREATEST(COALESCE(a.date_last_modified, ci.date_last_modified),
+                COALESCE(a.date_last_modified, ci.date_last_modified)) as                       Date_Last_Modified,
+       a.voided                                                        as                       voided
 from dwapi_etl.etl_patient_demographics d
          join dwapi_etl.etl_mch_antenatal_visit a on d.patient_id = a.patient_id
          left join dwapi_etl.etl_allergy_chronic_illness ci on a.visit_id = ci.visit_id
-         join dwapi_etl.etl_mch_enrollment e on d.patient_id = e.patient_id
          join kenyaemr_etl.etl_default_facility_info i
 where a.visit_id is not null
 group by a.visit_id;

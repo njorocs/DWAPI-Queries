@@ -240,7 +240,6 @@ select d.patient_id                                                             
            when 1537 then 'Another Health Facility'
            when 163488 then 'Community Unit'
            when 165093 then 'HIV preventive services'
-           when 1175 then 'N/A' END                                    as                       ReferredTo,
            when 166100 then 'Referral to PLHIV networks'
            when 1175 then 'N/A' END              as                                             ReferredTo,
        ''                                                                                       ReferralReasons,
